@@ -7,8 +7,8 @@ import { NOISE_GLSL } from './glsl/noise.js';
 export const G = {
   uTime: { value: 0 },
   uLmScale: { value: 1 },
-  uGroupColor: { value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()] },
-  uSkyColor: { value: new THREE.Vector3(0.02, 0.022, 0.03) },
+  uGroupColor: { value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()] },
+  uSkyColor: { value: new THREE.Vector3(0.024, 0.026, 0.034) },
   uSpecOcc: { value: 2.0 },
   uWetness: { value: 1.0 },
   // lightmaps
@@ -19,8 +19,10 @@ export const G = {
   // reflection pass + fog
   uReflPass: { value: 0 },
   uReflCamPos: { value: new THREE.Vector3() },
-  uFogColor: { value: new THREE.Vector3(0.02, 0.022, 0.028) },
-  uFogDensity: { value: 0.03 },
+  // reflection-pass fog (set every frame from Pipeline.params)
+  uFogColor: { value: new THREE.Vector3(0.0066, 0.0067, 0.0078) },
+  uFogDensity: { value: 0.016 },
+  uFogStart: { value: 16 },
   uStoreMin: { value: new THREE.Vector2(-10.3, -7.3) },
   uStoreMax: { value: new THREE.Vector2(0.3, 15.3) },
   // planar reflection
@@ -42,13 +44,14 @@ const FRAG_PRE = /* glsl */ `
 varying vec3 vWorldX;
 uniform float uTime;
 uniform float uLmScale;
-uniform vec3 uGroupColor[3];
+uniform vec3 uGroupColor[4];
 uniform vec3 uSkyColor;
 uniform float uSpecOcc;
 uniform float uReflPass;
 uniform vec3 uReflCamPos;
 uniform vec3 uFogColor;
 uniform float uFogDensity;
+uniform float uFogStart;
 uniform vec2 uStoreMin;
 uniform vec2 uStoreMax;
 uniform int uDebugView;
@@ -60,7 +63,7 @@ vec3 dbgIrr = vec3(0.0);
   uniform sampler2D uLmD;
 #endif
 #if defined(BAKE_POINTS) || defined(BAKE_INST)
-  varying vec3 vBkStatic;
+  varying vec4 vBkStatic;
   varying vec4 vBkGroups;
 #endif
 #ifdef BAKE_NONE
@@ -108,7 +111,7 @@ varying vec3 vWorldX;
   uniform sampler2D uPtGroups;
   uniform int uPtBase;
   uniform int uPtWidth;
-  varying vec3 vBkStatic;
+  varying vec4 vBkStatic;
   varying vec4 vBkGroups;
 #endif
 `;
@@ -132,7 +135,7 @@ const VERT_MAIN = /* glsl */ `
       int bi = uPtBase + gl_VertexID;
     #endif
     ivec2 tc = ivec2(bi % uPtWidth, bi / uPtWidth);
-    vBkStatic = texelFetch(uPtStatic, tc, 0).rgb;
+    vBkStatic = texelFetch(uPtStatic, tc, 0);
     vBkGroups = texelFetch(uPtGroups, tc, 0);
   #endif
 }
@@ -143,21 +146,24 @@ const FRAG_MAP = /* glsl */ `
 vec3 bkStatic = vec3(0.0);
 vec4 bkGroups = vec4(0.0);
 vec4 bkDir = vec4(0.0);
+float bkSky = 0.0;
 #if defined(BAKE_ATLAS) || defined(BAKE_GROUND)
   bkStatic = texture2D(uLmS, vLmUv).rgb;
   bkGroups = texture2D(uLmG, vLmUv);
   bkDir = texture2D(uLmD, vLmUv);
+  bkSky = bkDir.a;
   #ifdef BAKE_GROUND
-    if (any(lessThan(vLmUv, vec2(0.0))) || any(greaterThan(vLmUv, vec2(1.0)))) { bkStatic = vec3(0.0); bkGroups = vec4(0.0, 0.0, 0.0, 1.0 / max(uLmScale, 1e-4)); bkDir = vec4(0.0); }
+    if (any(lessThan(vLmUv, vec2(0.0))) || any(greaterThan(vLmUv, vec2(1.0)))) { bkStatic = vec3(0.0); bkGroups = vec4(0.0); bkDir = vec4(0.0); bkSky = 1.0 / max(uLmScale, 1e-4); }
   #endif
 #elif defined(BAKE_POINTS) || defined(BAKE_INST)
-  bkStatic = vBkStatic;
+  bkStatic = vBkStatic.rgb;
+  bkSky = vBkStatic.a;
   bkGroups = vBkGroups;
 #elif defined(BAKE_NONE)
   bkStatic = uProbeStatic / max(uLmScale, 1e-4);
-  bkGroups = vec4(0.0, 0.0, 0.0, uProbeSky / max(uLmScale, 1e-4));
+  bkSky = uProbeSky / max(uLmScale, 1e-4);
 #endif
-float skyVis = bkGroups.a * uLmScale;
+float skyVis = bkSky * uLmScale;
 float texRough = 1.0;
 float texExtra = 1.0;
 #ifdef USE_MAP
@@ -196,11 +202,13 @@ roughnessFactor = mix(roughnessFactor, min(roughnessFactor, uWetRough), wet);
 const FRAG_LIGHTS = /* glsl */ `
 #if defined(RE_IndirectDiffuse)
 {
-  vec3 bIrr = bkStatic + bkGroups.r * uGroupColor[0] + bkGroups.g * uGroupColor[1] + bkGroups.b * uGroupColor[2];
+  vec3 bIrr = bkStatic + bkGroups.r * uGroupColor[0] + bkGroups.g * uGroupColor[1] + bkGroups.b * uGroupColor[2] + bkGroups.a * uGroupColor[3];
   bIrr *= uLmScale;
   #if defined(BAKE_ATLAS) || defined(BAKE_GROUND)
-    if (bkDir.w > 1e-6) {
-      vec3 dw = bkDir.xyz / bkDir.w;
+    // total baked luminance (all lights at full level) normalises the directional term
+    float lumSum = dot(bkStatic, vec3(0.2126, 0.7152, 0.0722)) + bkGroups.r + bkGroups.g + bkGroups.b + bkGroups.a;
+    if (lumSum > 1e-6) {
+      vec3 dw = bkDir.xyz / lumSum;
       vec3 nW = transformNormalByInverseViewMatrix(normal, viewMatrix);
       vec3 gW = transformNormalByInverseViewMatrix(nonPerturbedNormal, viewMatrix);
       float a = dot(nW, dw) + 0.55;
@@ -226,7 +234,9 @@ if (uReflPass > 0.5) {
   float yo = max(vWorldX.y, 0.0);
   float bseg = Lr * yo / (hc + yo);
   bool inside = vWorldX.x > uStoreMin.x && vWorldX.x < uStoreMax.x && vWorldX.z > uStoreMin.y && vWorldX.z < uStoreMax.y && vWorldX.y < 4.4;
-  float ff = inside ? 0.0 : 1.0 - exp(-uFogDensity * bseg);
+  // only the ground->object part of the bounced path, and only beyond the clear near field
+  float seg = max(0.0, min(bseg, Lr - uFogStart));
+  float ff = inside ? 0.0 : 1.0 - exp(-uFogDensity * seg);
   gl_FragColor.rgb = mix(gl_FragColor.rgb, uFogColor, ff);
 }
 `;
@@ -240,7 +250,7 @@ export function patchMaterial(mat, cfg = {}) {
   const defines = {};
   const U = {
     uTime: G.uTime, uLmScale: G.uLmScale, uGroupColor: G.uGroupColor, uSkyColor: G.uSkyColor, uSpecOcc: G.uSpecOcc,
-    uReflPass: G.uReflPass, uReflCamPos: G.uReflCamPos, uFogColor: G.uFogColor, uFogDensity: G.uFogDensity,
+    uReflPass: G.uReflPass, uReflCamPos: G.uReflCamPos, uFogColor: G.uFogColor, uFogDensity: G.uFogDensity, uFogStart: G.uFogStart,
     uStoreMin: G.uStoreMin, uStoreMax: G.uStoreMax, uDebugView: G.uDebugView,
   };
   const bake = cfg.bake ?? null;
@@ -314,11 +324,11 @@ export function emissiveMaterial(color, intensity = 1, opts = {}) {
   const m = new THREE.MeshBasicMaterial({ color: c.clone().multiplyScalar(intensity), side: opts.side ?? THREE.FrontSide, map: opts.map ?? null, transparent: !!opts.transparent, depthWrite: opts.depthWrite ?? true, blending: opts.blending ?? THREE.NormalBlending });
   m.userData.baseColor = c;
   m.userData.baseIntensity = intensity;
-  const U = { uReflPass: G.uReflPass, uReflCamPos: G.uReflCamPos, uFogColor: G.uFogColor, uFogDensity: G.uFogDensity, uStoreMin: G.uStoreMin, uStoreMax: G.uStoreMax };
+  const U = { uReflPass: G.uReflPass, uReflCamPos: G.uReflCamPos, uFogColor: G.uFogColor, uFogDensity: G.uFogDensity, uFogStart: G.uFogStart, uStoreMin: G.uStoreMin, uStoreMax: G.uStoreMax };
   m.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, U);
     shader.vertexShader = 'varying vec3 vWorldX;\n' + shader.vertexShader.replace('#include <fog_vertex>', '#include <fog_vertex>\n{ vec4 wpx = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\n wpx = instanceMatrix * wpx;\n#endif\n wpx = modelMatrix * wpx; vWorldX = wpx.xyz; }');
-    shader.fragmentShader = `varying vec3 vWorldX;\nuniform float uReflPass; uniform vec3 uReflCamPos; uniform vec3 uFogColor; uniform float uFogDensity; uniform vec2 uStoreMin; uniform vec2 uStoreMax;\n` + shader.fragmentShader.replace('#include <fog_fragment>', FRAG_FOG);
+    shader.fragmentShader = `varying vec3 vWorldX;\nuniform float uReflPass; uniform vec3 uReflCamPos; uniform vec3 uFogColor; uniform float uFogDensity; uniform float uFogStart; uniform vec2 uStoreMin; uniform vec2 uStoreMax;\n` + shader.fragmentShader.replace('#include <fog_fragment>', FRAG_FOG);
   };
   m.customProgramCacheKey = () => 'emis' + (opts.map ? 'm' : '') + (opts.transparent ? 't' : '');
   m.fog = false;

@@ -9,8 +9,9 @@ import { FSPass, fsMaterial, makeRT } from '../render/FSPass.js';
 //   - atlas lightmap   (all lightmapped charts, rasterised in UV space)
 //   - ground lightmap  (planar XZ mapping of the lot / road / interior floor at y = 0)
 //   - point texture    (one texel per vertex of vertex-lit meshes, per instance, per probe)
-// Each target has: [0] static RGB irradiance, [1] group channels (R,G,B switchable light
-// groups, A = sky visibility irradiance), [2] dominant light direction (for normal maps).
+// Each target has: [0] static RGB irradiance (A = coverage; for points A = sky visibility),
+// [1] four switchable light groups (luminance), [2] dominant light direction * luminance
+// (A = sky visibility irradiance).
 // -----------------------------------------------------------------------------------------
 
 const TAPS = [
@@ -156,10 +157,15 @@ void main() {
     }
   }
   float lum = dot(contrib, vec3(0.2126, 0.7152, 0.0722));
-  oStatic = vec4(contrib * uIsStatic, 1.0);
-  oGroups = (uMode > 0.5) ? vec4(0.0, 0.0, 0.0, contrib.r) : uGroupMask * lum;
-  #ifndef POINTS
-  oDir = (uMode > 0.5) ? vec4(0.0) : vec4(L * lum, lum);
+  bool skyJob = uMode > 0.5;
+  // groups: four switchable light groups (luminance). Sky visibility goes to dir.a (lightmaps)
+  // or static.a (points); static.a stays a coverage marker for lightmap dilation.
+  oGroups = skyJob ? vec4(0.0) : uGroupMask * lum;
+  #ifdef POINTS
+  oStatic = vec4(skyJob ? vec3(0.0) : contrib * uIsStatic, skyJob ? contrib.r : 0.0);
+  #else
+  oStatic = vec4(skyJob ? vec3(0.0) : contrib * uIsStatic, 1.0);
+  oDir = skyJob ? vec4(0.0, 0.0, 0.0, contrib.r) : vec4(L * lum, 0.0);
   #endif
 }`;
 
@@ -466,7 +472,7 @@ export class LightBaker {
       const k = L.intensity / this.samples;
       U.uColor.value.set(L.color.r * k, L.color.g * k, L.color.b * k);
       U.uIsStatic.value = L.group < 0 ? 1 : 0;
-      U.uGroupMask.value.set(L.group === 0 ? 1 : 0, L.group === 1 ? 1 : 0, L.group === 2 ? 1 : 0, 0);
+      U.uGroupMask.value.set(L.group === 0 ? 1 : 0, L.group === 1 ? 1 : 0, L.group === 2 ? 1 : 0, L.group === 3 ? 1 : 0);
       if (L.group >= 0) U.uColor.value.set(k, k, k);
       U.uAxis.value.copy(L.axis ?? new THREE.Vector3(0, -1, 0));
       U.uLambert.value = L.lambert ?? 0;
@@ -491,6 +497,7 @@ export class LightBaker {
       R.clear(true, true, false);
       R.render(this.casterScene, cam);
       U.uMode.value = 1;
+      U.uIsStatic.value = 0;
       U.uSkyVP.value.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
       U.uSkyDir.value.copy(dir);
       U.uSkyWeight.value = 2 / this.skyDirs;

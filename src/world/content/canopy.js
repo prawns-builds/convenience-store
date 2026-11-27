@@ -128,7 +128,7 @@ export function buildCanopy(ctx) {
     ctx.light({
       kind: 'tube', a: [fx, y - 0.04, fz - 0.6], b: [fx, y - 0.04, fz + 0.6], color: 0xe4eeff, intensity: 24,
       group: state === 'flicker' ? GROUP.FLICKER_EXT : -1, lambert: 0.3, cone: [-0.6, -0.05], range: 20, soft: 0.3,
-      glow: { power: 3.2, exterior: true, down: 0.2, color: 0xdfe8ff },
+      glow: { power: 1.3, exterior: true, down: 0.35, color: 0xdfe8ff },
     });
   }
   // fill: light bounced from the wet concrete back onto the canopy underside & pumps

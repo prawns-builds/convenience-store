@@ -18,16 +18,19 @@ export class Pipeline {
     this.reflCam.layers.set(0);
     this.prevViewProj = new THREE.Matrix4();
     this.viewProj = new THREE.Matrix4();
+    // Look: crisp near field, fog that only builds with distance (street lights fading down the
+    // highway), deep blacks, restrained lens effects. Values are scene-linear HDR.
     this.params = {
-      fogDensity: 0.0085, fogHeight: 9, dustDensity: 0.003,
-      fogColor: new THREE.Color(0.0021, 0.0023, 0.0029), fogColorHigh: new THREE.Color(0.0012, 0.0013, 0.0018),
-      bloomStrength: 0.11, bloomRadius: 1.0,
-      distortion: 0.3, ca: 0.035, vignette: 0.6, grain: 0.032,
-      exposureBias: 1.0, saturation: 0.82,
-      lift: new THREE.Vector3(0.004, 0.0045, 0.006), gain: new THREE.Vector3(1.0, 1.0, 1.0),
-      motionBlur: 0.55,
-      key: 0.036, minExp: 0.45, maxExp: 3.4,
-      flash: 0, glitch: 0, fade: 0, lightning: 0, glowGain: 3.4,
+      fogDensity: 0.016, fogHeight: 7, fogStart: 16, dustDensity: 0.0012,
+      fogColor: new THREE.Color(0.0066, 0.0067, 0.0078), fogColorHigh: new THREE.Color(0.0040, 0.0042, 0.0052),
+      bloomStrength: 0.045, bloomRadius: 1.0,
+      sharpen: 0.55, contrast: 1.18,
+      distortion: 0.14, ca: 0.012, vignette: 0.5, grain: 0.011,
+      exposureBias: 1.0, saturation: 0.92,
+      lift: new THREE.Vector3(0.0012, 0.0014, 0.002), gain: new THREE.Vector3(1.0, 1.0, 1.0),
+      motionBlur: 0.0,
+      key: 0.03, minExp: 0.4, maxExp: 2.2,
+      flash: 0, glitch: 0, fade: 0, lightning: 0, glowGain: 3.0,
     };
     this.glows = [];
     this.flashlight = null;
@@ -51,7 +54,7 @@ export class Pipeline {
       uniforms: {
         ...depthU(), ...box,
         tDepth: { value: null }, uCamPos: { value: new THREE.Vector3() }, uTime: { value: 0 }, uFrame: { value: 0 },
-        uFogDensity: { value: 0 }, uFogHeight: { value: 10 }, uDustDensity: { value: 0 },
+        uFogDensity: { value: 0 }, uFogHeight: { value: 10 }, uFogStart: { value: 15 }, uDustDensity: { value: 0 },
         uFlashOn: { value: 0 }, uFlashPos: { value: new THREE.Vector3() }, uFlashDir: { value: new THREE.Vector3(0, 0, -1) },
         uFlashColor: { value: new THREE.Vector3() }, uFlashCone: { value: new THREE.Vector2(0.8, 0.95) },
         tFlashShadow: { value: null }, uFlashShadowMatrix: { value: new THREE.Matrix4() }, tNoise: { value: null },
@@ -66,7 +69,7 @@ export class Pipeline {
       uniforms: {
         ...depthU(), ...box,
         tColor: { value: null }, tDepth: { value: null }, tVol: { value: null }, uVolTexel: { value: new THREE.Vector2() },
-        uCamPos: { value: new THREE.Vector3() }, uFogDensity: { value: 0 }, uFogHeight: { value: 10 }, uDustDensity: { value: 0 },
+        uCamPos: { value: new THREE.Vector3() }, uFogDensity: { value: 0 }, uFogHeight: { value: 10 }, uFogStart: { value: 15 }, uDustDensity: { value: 0 },
         uFogColor: { value: new THREE.Vector3() }, uFogColorHigh: { value: new THREE.Vector3() }, uLightning: { value: 0 },
       },
       fragmentShader: SH.COMPOSITE,
@@ -83,7 +86,7 @@ export class Pipeline {
         ...depthU(),
         tColor: { value: null }, tBloom: { value: null }, tExposure: { value: null }, tDepth: { value: null },
         uResolution: { value: new THREE.Vector2() }, uTime: { value: 0 }, uFrame: { value: 0 },
-        uBloomStrength: { value: 0.08 }, uDistortion: { value: 0.2 }, uCA: { value: 0.03 }, uVignette: { value: 0.5 },
+        uBloomStrength: { value: 0.08 }, uSharpen: { value: 0.5 }, uContrast: { value: 1.0 }, uDistortion: { value: 0.2 }, uCA: { value: 0.03 }, uVignette: { value: 0.5 },
         uGrain: { value: 0.04 }, uExposureBias: { value: 1 }, uSaturation: { value: 0.85 },
         uLift: { value: new THREE.Vector3() }, uGain: { value: new THREE.Vector3(1, 1, 1) },
         uMotionBlur: { value: 0 }, uPrevViewProj: { value: new THREE.Matrix4() }, uViewProj: { value: new THREE.Matrix4() },
@@ -97,6 +100,15 @@ export class Pipeline {
     this.exposureInfo = { exposure: 1, avg: 0.1 };
   }
 
+  // Compile every post-processing program in parallel during loading.
+  async precompile() {
+    const passes = [this.down13, this.blurDir, this.upTent, this.vol, this.comp, this.expo, this.final];
+    const scene = new THREE.Scene();
+    for (const p of passes) scene.add(p.mesh);
+    try { if (this.r.compileAsync) await this.r.compileAsync(scene, new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)); } catch (e) { /* lazy compile */ }
+    for (const p of passes) scene.remove(p.mesh);
+  }
+
   setSize(cssW, cssH, pixelRatio) {
     const q = this.q;
     const w = Math.max(16, Math.round(cssW * pixelRatio * q.scale));
@@ -106,7 +118,9 @@ export class Pipeline {
     this._disposeRTs();
     const depthTex = new THREE.DepthTexture(w, h, THREE.UnsignedIntType);
     depthTex.minFilter = THREE.NearestFilter; depthTex.magFilter = THREE.NearestFilter;
-    const main = makeRT(w, h, { type: THREE.HalfFloatType, depth: true, samples: q.msaa, depthTexture: depthTex });
+    // at high pixel densities 2x MSAA is enough (edges are already sub-pixel)
+    const samples = pixelRatio * q.scale >= 1.5 ? Math.min(q.msaa, 2) : q.msaa;
+    const main = makeRT(w, h, { type: THREE.HalfFloatType, depth: true, samples, depthTexture: depthTex });
     const comp = makeRT(w, h, { type: THREE.HalfFloatType });
     const rw = Math.max(8, Math.round(w * q.reflScale)), rh = Math.max(8, Math.round(h * q.reflScale));
     const refl0 = makeRT(rw, rh, { type: THREE.HalfFloatType, depth: true });
@@ -203,9 +217,14 @@ export class Pipeline {
     camera.updateMatrixWorld();
     this.viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
 
-    // dynamic shadow maps (flashlight) are rendered once per frame by whichever pass runs first
+    // dynamic shadow maps (flashlight) are rendered once per frame by whichever pass runs first,
+    // and not at all while the phone light is off
     R.shadowMap.autoUpdate = false;
-    R.shadowMap.needsUpdate = true;
+    R.shadowMap.needsUpdate = !this.flashlight || this.flashlight.light.intensity > 0.001;
+    // reflection-pass fog follows the main fog settings
+    G.uFogColor.value.set(P.fogColor.r, P.fogColor.g, P.fogColor.b);
+    G.uFogDensity.value = P.fogDensity;
+    G.uFogStart.value = P.fogStart;
     // reflection
     const pitch = Math.asin(THREE.MathUtils.clamp(this._v0.set(0, 0, -1).transformDirection(camera.matrixWorld).y, -1, 1));
     const vfov = THREE.MathUtils.degToRad(camera.fov) * 0.5;
@@ -229,7 +248,7 @@ export class Pipeline {
     V.tDepth.value = this.rts.depthTex;
     V.uCamPos.value.copy(camPos);
     V.uTime.value = this.time; V.uFrame.value = this.frame % 64;
-    V.uFogDensity.value = P.fogDensity; V.uFogHeight.value = P.fogHeight; V.uDustDensity.value = P.dustDensity;
+    V.uFogDensity.value = P.fogDensity; V.uFogHeight.value = P.fogHeight; V.uFogStart.value = P.fogStart; V.uDustDensity.value = P.dustDensity;
     V.tNoise.value = G.uNoiseTex.value;
     const fl = this.flashlight;
     if (fl && fl.light.intensity > 0.001 && fl.light.shadow.map) {
@@ -272,7 +291,7 @@ export class Pipeline {
     C.tColor.value = this.rts.main.texture; C.tDepth.value = this.rts.depthTex; C.tVol.value = this.rts.vol.texture;
     C.uVolTexel.value.set(1 / this.rts.vol.width, 1 / this.rts.vol.height);
     C.uCamPos.value.copy(camPos);
-    C.uFogDensity.value = P.fogDensity; C.uFogHeight.value = P.fogHeight; C.uDustDensity.value = P.dustDensity;
+    C.uFogDensity.value = P.fogDensity; C.uFogHeight.value = P.fogHeight; C.uFogStart.value = P.fogStart; C.uDustDensity.value = P.dustDensity;
     C.uFogColor.value.set(P.fogColor.r, P.fogColor.g, P.fogColor.b);
     C.uFogColorHigh.value.set(P.fogColorHigh.r, P.fogColorHigh.g, P.fogColorHigh.b);
     C.uLightning.value = P.lightning;
@@ -300,6 +319,7 @@ export class Pipeline {
     F.tDepth.value = this.rts.depthTex;
     F.uTime.value = this.time; F.uFrame.value = this.frame;
     F.uBloomStrength.value = P.bloomStrength; F.uDistortion.value = P.distortion; F.uCA.value = P.ca;
+    F.uSharpen.value = P.sharpen; F.uContrast.value = P.contrast;
     F.uVignette.value = P.vignette; F.uGrain.value = P.grain; F.uExposureBias.value = P.exposureBias;
     F.uSaturation.value = P.saturation; F.uLift.value.copy(P.lift); F.uGain.value.copy(P.gain);
     F.uMotionBlur.value = this.q.motionBlur ? P.motionBlur : 0;

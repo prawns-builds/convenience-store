@@ -52,26 +52,29 @@ export class Game {
     this.audio = null;
     this.focus = null;
     this.gameClock = 2 * 3600 + 47 * 60; // 02:47:00
-    this.world.setGroupLevel(GROUP.BREAKER, 0);
+    // everything is lit when you arrive (like the reference footage); the store goes dark
+    // when you walk up to it (Events.blackout)
+    this.world.setGroupLevel(GROUP.STORE, 1);
+    this.world.setGroupLevel(GROUP.LAMP, 1);
     this.world.setGroupLevel(GROUP.FLICKER_EXT, 1);
-    this.world.setGroupLevel(GROUP.FLICKER_INT, 0.6);
+    this.world.setGroupLevel(GROUP.FLICKER_INT, 0.85);
     this.flick = { ext: 1, int: 1, extT: 0, intT: 0 };
     this.player.onStep = (run, pos) => this.audio?.footstep(run, pos);
     const p = this.params;
     if (p.has('flash')) this.flashlight.on = true;
-    if (p.has('breaker')) this.world.setGroupLevel(GROUP.BREAKER, 1);
-    if (!p.has('cam')) this.player.setPose(9.2, 1.52, 28.5, THREE.MathUtils.degToRad(14), THREE.MathUtils.degToRad(-3));
+    if (p.has('blackout')) { this.world.setGroupLevel(GROUP.STORE, 0); this.world.setGroupLevel(GROUP.LAMP, 0); }
+    if (!p.has('cam')) this.player.setPose(7.6, 1.52, 23.5, THREE.MathUtils.degToRad(19), THREE.MathUtils.degToRad(-2));
     // rain + its light set (exterior static lights + street light heads)
     this.rain = new Rain(this.world.scene, this.quality);
     const rl = [];
     for (const L of this.world.lights) {
       const pos = L.pos;
       const inStore = pos.x > -10 && pos.x < 0.05 && pos.z > -7 && pos.z < 15 && pos.y < 4.4;
-      if (inStore || L.group === GROUP.BREAKER || L.group === GROUP.FLICKER_INT) continue;
+      if (inStore || L.group === GROUP.STORE || L.group === GROUP.FLICKER_INT) continue;
       if (L.intensity < 4) continue;
-      rl.push({ pos, color: L.color, exteriorRain: true, rainRange: L.range > 25 ? 26 : 14, rainPower: L.intensity * (L.range > 25 ? 0.05 : 0.09) });
+      rl.push({ pos, color: L.color, group: L.group, exteriorRain: true, rainRange: L.range > 25 ? 26 : 14, rainPower: L.intensity * (L.range > 25 ? 0.05 : 0.09) });
     }
-    for (let k = -3; k <= 3; k++) rl.push({ pos: new THREE.Vector3(25.2, 8.4, 8 + k * 32), color: new THREE.Color(0xffa65a), exteriorRain: true, rainRange: 26, rainPower: 5.5 });
+    for (let k = -3; k <= 3; k++) rl.push({ pos: new THREE.Vector3(25.2, 8.4, 8 + k * 32), color: new THREE.Color(0xffcf9e), exteriorRain: true, rainRange: 26, rainPower: 5.5 });
     this.rain.setLights(rl);
     this.cctv = new CCTV(this, this.world.ctx.cctvScreens ?? []);
     this.traffic = new Traffic(this);
@@ -127,14 +130,24 @@ export class Game {
     let ext = 1;
     if (f.extMode === 'stutter') ext = Math.random() < 0.45 ? 0.05 + Math.random() * 0.2 : 1;
     W.setGroupLevel(GROUP.FLICKER_EXT, ext);
-    // interior faulty troffer / restroom: dim, buzzing, irregular
+    // interior faulty troffer / restroom (own circuit): dim, buzzing, irregular. With the
+    // sales floor dark it mostly stays off and sputters in bursts.
+    const storeOn = W.groupLevels[GROUP.STORE] > 0.5;
     f.intT -= dt;
-    if (f.intT <= 0) { f.intMode = Math.random() < 0.4 ? 'stutter' : (Math.random() < 0.5 ? 'off' : 'on'); f.intT = f.intMode === 'stutter' ? 0.3 + Math.random() * 1.0 : 1 + Math.random() * 4; }
-    let it = f.intMode === 'off' ? 0.0 : 0.85;
-    if (f.intMode === 'stutter') it = Math.random() < 0.5 ? Math.random() * 0.3 : 0.9;
+    if (f.intT <= 0) {
+      const r = Math.random();
+      if (storeOn) { f.intMode = r < 0.4 ? 'stutter' : (r < 0.7 ? 'off' : 'on'); f.intT = f.intMode === 'stutter' ? 0.3 + Math.random() * 1.0 : 1 + Math.random() * 4; }
+      else { f.intMode = r < 0.3 ? 'stutter' : (r < 0.45 ? 'on' : 'off'); f.intT = f.intMode === 'stutter' ? 0.25 + Math.random() * 0.9 : f.intMode === 'on' ? 0.4 + Math.random() * 1.2 : 2 + Math.random() * 5; }
+    }
+    // with the sales floor dark the tube is dying: dim glow, weak sputters
+    const peak = storeOn ? 0.85 : 0.3;
+    let it = f.intMode === 'off' ? 0.0 : peak;
+    if (f.intMode === 'stutter') it = Math.random() < 0.5 ? Math.random() * 0.3 * peak : peak * 1.05;
     if (this.events?.intDead) it = 0;
     W.setGroupLevel(GROUP.FLICKER_INT, it);
     this.audio?.setFlicker(ext, it);
+    this.audio?.setStore(W.groupLevels[GROUP.STORE]);
+    this.audio?.setLamp(W.groupLevels[GROUP.LAMP]);
   }
 
   // ------------------------------------------------------------------------------- interactions
@@ -164,14 +177,20 @@ export class Game {
   // ------------------------------------------------------------------------------- dynamic resolution
   updateDynRes(dt) {
     if (this.params.has('shot') || this.params.has('fixedres')) return;
+    if (this.paused || !this.world.baker.done) { this.frameTimes.length = 0; return; }
     this.frameTimes.push(dt);
-    if (this.frameTimes.length < 45) return;
+    if (this.frameTimes.length < 60) return;
     const sorted = this.frameTimes.slice().sort((a, b) => a - b);
+    const p10 = sorted[Math.floor(sorted.length * 0.1)];
     const p80 = sorted[Math.floor(sorted.length * 0.8)];
     this.frameTimes.length = 0;
+    // display refresh interval = the shortest steady vsync interval seen (60..144 Hz). The
+    // resolution scale adapts so frames fit it, never below the preset's floor.
+    this.refresh = Math.min(this.refresh ?? 1 / 30, Math.max(1 / 144, p10));
+    const budget = this.refresh * 1.1;
     let s = this.dynScale;
-    if (p80 > 1 / 50) s = Math.max(0.55, s - 0.08);
-    else if (p80 < 1 / 70 && s < 1) s = Math.min(1, s + 0.05);
+    if (p80 > budget * 1.15) s = Math.max(this.quality.minScale ?? 0.6, s - 0.06);
+    else if (p80 < budget * 0.92 && s < 1) s = Math.min(1, s + 0.04);
     if (s !== this.dynScale) { this.dynScale = s; this.onResize?.(); }
   }
 
@@ -212,12 +231,12 @@ export class Game {
     // progressive bake refinement
     if (!W.baker.done) {
       // adapt refinement work to the frame budget so it never causes visible stutter
-      const jobs = this.params.has('shot') ? Number(this.params.get('bakejobs') ?? 3) : (!this.started ? 4 : dt < 0.018 ? 3 : dt < 0.03 ? 2 : 1);
+      const jobs = this.params.has('shot') ? Number(this.params.get('bakejobs') ?? 3) : (!this.started ? 4 : dt < 0.012 ? 2 : 1);
       if (jobs > 0) W.baker.step(this.quality.bakeBudget, jobs);
       if (W.baker.done) { W.captureProbes(); W._readProbes(); W.baker.disposeAccumulators(); }
     }
     this.pipeline.params.lightning = G.uLightning.value;
-    this.rain.update(this.camera, this.flashlight, { x: this.pipeline.w, y: this.pipeline.h });
+    this.rain.update(this.camera, this.flashlight, { x: this.pipeline.w, y: this.pipeline.h }, W.groupLevels);
     this.cctv.update(dt);
     this.pipeline.render(W.scene, this.camera, dt);
     this.hud.update(dt);

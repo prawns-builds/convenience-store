@@ -159,7 +159,7 @@ export function buildInterior(ctx) {
     const dead = deadSection.includes(i);
     b.box(dead ? 'plasticWhite' : 'emCooler', [CX1 - 0.02, CH / 2, z0 + 0.03], [0.012, CH - 0.5, 0.02], { mode: dead ? 'vtx' : 'none', subdiv: 2 });
     if (i % 2 === 0 && !dead) {
-      ctx.light({ kind: 'tube', a: [CX1 - 0.06, 0.35, z1], b: [CX1 - 0.06, CH - 0.15, z1], color: 0xe2ecff, intensity: 2.3, lambert: 0, range: 9, soft: 0.25, glow: { power: 0.35, exterior: false, down: 0, color: 0xe2ecff } });
+      ctx.light({ kind: 'tube', a: [CX1 - 0.06, 0.35, z1], b: [CX1 - 0.06, CH - 0.15, z1], color: 0xe2ecff, intensity: 1.5, lambert: 0, range: 9, soft: 0.25, glow: { power: 0.35, exterior: false, down: 0, color: 0xe2ecff } });
     }
   }
   b.box('frame', [CX1 + 0.02, CH / 2, CZ1], [0.05, CH, 0.05], { mode: 'vtx', subdiv: 3 });
@@ -230,19 +230,24 @@ export function buildInterior(ctx) {
     b.cylinder('metalRed', [px, y, 4.55], 0.25, 0.2, { segments: 20, radiusTop: 0.06, caps: [false, true], subdiv: 2 });
     b.cylinder('emPendant', [px, y + 0.03, 4.55], 0.07, 0.005, { segments: 16, mode: 'none', caps: [true, false] });
     b.cylinder('plasticBlack', [px, y + 0.005, 4.55], 0.235, 0.004, { segments: 20, mode: 'vtx', caps: [true, false], subdiv: 1 });
-    ctx.light({ kind: 'point', pos: [px, y - 0.04, 4.55], radius: 0.08, color: 0xffa860, intensity: 3.0, axis: [0, -1, 0], lambert: 0.5, cone: [-0.05, 0.35], range: 11, soft: 0.2, glow: { power: 0.6, exterior: false, down: 0.9, color: 0xffb070 } });
+    ctx.light({ kind: 'point', group: GROUP.STORE, pos: [px, y - 0.04, 4.55], radius: 0.08, color: 0xffa860, intensity: 5.5, axis: [0, -1, 0], lambert: 0.5, cone: [-0.05, 0.35], range: 11, soft: 0.2, glow: { power: 0.8, exterior: false, down: 0.9, color: 0xffb070 } });
   }
 
   // ================================================================== CEILING FIXTURES (troffers)
-  mats.define('trofferLens', { color: 0xe8e8e8, roughness: 0.3, emissive: 0xf2f6ff, emissiveIntensity: 9, group: GROUP.BREAKER });
+  mats.define('trofferLens', { color: 0xe8e8e8, roughness: 0.3, emissive: 0xffe4c2, emissiveIntensity: 9, group: GROUP.STORE });
   mats.define('trofferLensF', { color: 0xe8e8e8, roughness: 0.3, emissive: 0xf2f6ff, emissiveIntensity: 9, group: GROUP.FLICKER_INT });
   const tr = [[-3.35, -4.27], [-6.4, -4.27], [-3.35, -1.22], [-6.4, -1.22], [-3.35, 1.83], [-6.4, 1.83]];
   tr.forEach(([tx, tz], i) => {
     const flick = i === 3;
     b.box('plasticWhite', [tx, SITE.store.ceilY - 0.01, tz], [0.64, 0.02, 1.24], { mode: 'vtx', subdiv: 3, faces: ['ny'] });
     b.quad(flick ? 'trofferLensF' : 'trofferLens', [tx, SITE.store.ceilY - 0.022, tz], [1, 0, 0], [0, 0, 1], 0.28, 0.58, { mode: 'none', region: 'int' });
-    ctx.light({ kind: 'rect', pos: [tx, SITE.store.ceilY - 0.06, tz], u: [1, 0, 0], v: [0, 0, 1], size: [0.56, 1.16], color: 0xf2f6ff, intensity: 7.5, group: flick ? GROUP.FLICKER_INT : GROUP.BREAKER, axis: [0, -1, 0], lambert: 1.0, cone: [-0.05, 0.15], range: 16, soft: 0.4 });
+    ctx.light({ kind: 'rect', pos: [tx, SITE.store.ceilY - 0.06, tz], u: [1, 0, 0], v: [0, 0, 1], size: [0.56, 1.16], color: 0xf2f6ff, intensity: flick ? 6.0 : 5.2, group: flick ? GROUP.FLICKER_INT : GROUP.STORE, axis: [0, -1, 0], lambert: 1.0, cone: [-0.05, 0.15], range: 16, soft: 0.4 });
   });
+  // light bounced off the floor and shelves onto the ceiling / upper walls (the bake is
+  // direct-only); on the sales-floor circuit so it goes dark with the store
+  for (const zc of [-3.4, 2.9]) {
+    ctx.light({ kind: 'rect', pos: [-5.0, 0.3, zc], u: [1, 0, 0], v: [0, 0, 1], size: [8.4, 5.8], color: 0xffe0c0, intensity: 1.5, group: GROUP.STORE, axis: [0, 1, 0], lambert: 1.0, cone: [-0.05, 0.2], range: 10, soft: 1.3 });
+  }
   // exit sign above the entrance (inside)
   {
     const ex = mats.registerEmissive('emExit', emissiveMaterial(0xffffff, 3.0, { map: signTexture('exitSign') }));
@@ -369,7 +374,7 @@ export function buildInterior(ctx) {
     b.box('steel', [0.24, 0, 0], [0.48, 0.78, 0.012], { mode: 'vtx', subdiv: 4 });
     b.pop();
     ctx.breakerPos = new THREE.Vector3(bx - 0.15, 1.55, bz);
-    ctx.interact({ name: 'breaker', pos: ctx.breakerPos.clone(), radius: 0.5, prompt: (g) => (g.world.groupLevels[0] > 0.5 ? '[E] CUT POWER (SALES FLOOR)' : '[E] RESET BREAKER'), action: (g) => g.events?.breaker?.() });
+    ctx.interact({ name: 'breaker', pos: ctx.breakerPos.clone(), radius: 0.5, prompt: (g) => (g.world.groupLevels[GROUP.STORE] > 0.5 ? '[E] CUT POWER (SALES FLOOR)' : '[E] RESET BREAKER'), action: (g) => g.events?.breaker?.() });
   }
   // bare bulb (stockroom)
   b.cylinder('plasticBlack', [-3.4, 2.75, 10.4], 0.005, 0.25, { segments: 4, subdiv: 1 });

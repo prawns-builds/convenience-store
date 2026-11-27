@@ -67,6 +67,46 @@ export class TextureGen {
     return rt.texture;
   }
 
+  // Generate many textures at once. All generator programs are compiled up front in parallel
+  // (KHR_parallel_shader_compile via compileAsync), which matters on D3D/ANGLE where large
+  // procedural shaders are slow to compile one after another.
+  //  items: [{ surface: def, size } | { raw: glsl, size, opts }]
+  async batch(items, onProgress = () => {}) {
+    const R = this.renderer;
+    const mats = [];
+    for (const it of items) {
+      if (it.surface) {
+        const ns = it.surface.normalStrength ?? 1;
+        it.mA = this._material(it.surface.glsl, 0, ns);
+        it.mN = this._material(it.surface.glsl, 1, ns);
+        mats.push(it.mA, it.mN);
+      } else {
+        it.mR = this._material(it.raw, 2, 1);
+        mats.push(it.mR);
+      }
+    }
+    if (R.compileAsync) {
+      const scene = new THREE.Scene();
+      for (const m of mats) { const pass = new FSPass(m); scene.add(pass.mesh); }
+      try { await R.compileAsync(scene, new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)); } catch (e) { /* fall back to lazy compile */ }
+    }
+    const out = [];
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (it.surface) {
+        const albedo = this._render(it.mA, it.size, { srgb: true });
+        const normal = this._render(it.mN, it.size, {});
+        albedo.name = it.surface.name + '_albedo';
+        normal.name = it.surface.name + '_normal';
+        out.push({ albedo, normal, name: it.surface.name });
+      } else {
+        out.push(this._render(it.mR, it.size, it.opts ?? {}));
+      }
+      onProgress((i + 1) / items.length);
+    }
+    return out;
+  }
+
   // Full PBR surface -> { albedo, normal }
   surface(def, size = 1024) {
     const albedo = this._render(this._material(def.glsl, 0, def.normalStrength ?? 1), size, { srgb: true });

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { SITE } from '../site.js';
 import { signTexture } from '../../gfx/CanvasTextures.js';
 import { emissiveMaterial } from '../../gfx/Materials.js';
+import { GROUP } from '../World.js';
 
 // Exterior props along the façade + lot: wall lamps, tin signs, ICE merchandiser, bench,
 // trash can, electrical box, payphone, price pole sign, arrow sign, propane cage.
@@ -15,7 +16,7 @@ function tinSign(ctx, key, tex, x, y, z, w, h, rotY = Math.PI / 2) {
   b.pop();
 }
 
-function wallLamp(ctx, x, y, z, rotY, power = 9) {
+function wallLamp(ctx, x, y, z, rotY, power = 9, group = -1) {
   const { b } = ctx;
   const broken = power <= 0;
   b.pushTRS(x, y, z, rotY);
@@ -24,7 +25,7 @@ function wallLamp(ctx, x, y, z, rotY, power = 9) {
   b.box('metalDark', [0, 0.19, 0.13], [0.22, 0.03, 0.22], { mode: 'vtx', subdiv: 6 });
   // glass globe (emissive) + cage bars
   b.pushEuler(0, 0.06, 0.13, 0, 0, 0);
-  b.cylinder(broken ? 'plasticWhite' : 'emBulbWarm', [0, -0.08, 0], 0.07, 0.24, { segments: 12, mode: broken ? 'vtx' : 'none', radiusTop: 0.075 });
+  b.cylinder(broken ? 'plasticWhite' : group === GROUP.LAMP ? 'emBulbLamp' : 'emBulbWarm', [0, -0.08, 0], 0.07, 0.24, { segments: 12, mode: broken ? 'vtx' : 'none', radiusTop: 0.075 });
   b.pop();
   for (let i = 0; i < 4; i++) {
     const a = (i / 4) * Math.PI * 2 + 0.4;
@@ -34,7 +35,7 @@ function wallLamp(ctx, x, y, z, rotY, power = 9) {
   b.pop();
   if (broken) return;
   const p = new THREE.Vector3(0, 0.05, 0.13).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY).add(new THREE.Vector3(x, y, z));
-  ctx.light({ kind: 'point', pos: [p.x, p.y, p.z], color: 0xffa65c, intensity: power, radius: 0.06, axis: [0, -1, 0], lambert: 0.35, cone: [-0.75, -0.35], range: 14, soft: 0.12, glow: { power: 2.2, exterior: true, down: 0.6, color: 0xffb070 } });
+  ctx.light({ kind: 'point', group, pos: [p.x, p.y, p.z], color: 0xffa65c, intensity: power, radius: 0.06, axis: [0, -1, 0], lambert: 0.35, cone: [-0.75, -0.35], range: 14, soft: 0.12, glow: { power: 2.2, exterior: true, down: 0.6, color: 0xffb070 } });
 }
 
 function bench(ctx, x, z, len, rotY) {
@@ -60,7 +61,7 @@ export function buildProps(ctx) {
   const { b, mats } = ctx;
   // ------------------------------------------------------------ façade: lamps + signs (solid section z 6.5..15)
   wallLamp(ctx, 0.0, 2.72, 13.5, Math.PI / 2, 8);
-  wallLamp(ctx, 0.0, 3.0, 10.3, Math.PI / 2, 10);
+  wallLamp(ctx, 0.0, 3.0, 10.3, Math.PI / 2, 10, GROUP.LAMP); // pops when you walk up to the store
   wallLamp(ctx, 0.0, 3.0, -6.75, Math.PI / 2, 0); // broken lamp (dark)
   tinSign(ctx, 'signVesper', signTexture('vesperWall'), 0.0, 2.05, 11.85, 1.3, 0.98);
   tinSign(ctx, 'signOil', signTexture('motorOil'), 0.0, 1.95, 8.95, 0.72, 0.96);

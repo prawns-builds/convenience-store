@@ -58,7 +58,7 @@ export class HUD {
     this.el.battFill.style.width = `${Math.round(this.camBatt * 85)}%`;
     // ISO follows auto exposure
     const info = g.pipeline.pollExposure();
-    const iso = Math.round(Math.min(6400, Math.max(200, 100 * info.exposure)) / 100) * 100;
+    const iso = Math.round(Math.min(6400, Math.max(100, 320 * info.exposure)) / 100) * 100;
     this.iso += (iso - this.iso) * 0.5;
     this.el.iso.textContent = `ISO ${Math.round(this.iso / 100) * 100}`;
     this.el.fov.textContent = `FOV ${Math.round(g.hfov + 10)}°`;

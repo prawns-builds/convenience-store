@@ -90,6 +90,7 @@ uniform float uFrame;
 // fog
 uniform float uFogDensity;     // exterior base extinction
 uniform float uFogHeight;      // height falloff
+uniform float uFogStart;       // clear air around the camera (m)
 uniform float uDustDensity;    // interior haze
 uniform vec3 uBoxMin;
 uniform vec3 uBoxMax;
@@ -125,6 +126,8 @@ float glowSeg(vec3 q, float b, float h, float t0, float t1) {
 float fogDensityAt(vec3 p) {
   return uFogDensity * exp(-max(p.y, 0.0) / uFogHeight);
 }
+// fog thickens with distance from the camera: crisp near field, heavy far field
+float fogRamp(float t) { return smoothstep(uFogStart * 0.35, uFogStart * 1.6, t); }
 
 void main() {
   float d = texture2D(tDepth, vUv).r;
@@ -156,7 +159,8 @@ void main() {
       float c = dot(Ld, uFlashDir);
       if (c > uFlashCone.x) {
         bool inBox = all(greaterThan(p, uBoxMin)) && all(lessThan(p, uBoxMax));
-        float dens = inBox ? uDustDensity : fogDensityAt(p);
+        // rain + mist still catch the beam close by, so keep a floor on the near density
+        float dens = inBox ? uDustDensity : fogDensityAt(p) * max(fogRamp(t), 0.3);
         // drifting mist / rain sheets
         vec2 nuv = p.xz * 0.11 + vec2(uTime * 0.012, uTime * 0.02) + p.y * 0.05;
         float mist = texture2D(tNoise, nuv).r * 1.4 + texture2D(tNoise, p.xz * 0.37 - uTime * 0.03 + p.y * 0.2).g * 0.6;
@@ -188,21 +192,23 @@ void main() {
     float b = dot(q, rd);
     float h = sqrt(max(dot(q, q) - b * b, 0.0025));
     float total;
+    float t0 = ext ? uFogStart * 0.35 : 0.0;   // no in-scatter in the clear air around the camera
     if (ext) {
-      total = glowSeg(q, b, h, 0.0, tMax);
-      if (hitBox && tout > tin) total -= glowSeg(q, b, h, tin, tout);
+      total = glowSeg(q, b, h, t0, max(tMax, t0));
+      if (hitBox && tout > max(tin, t0)) total -= glowSeg(q, b, h, max(tin, t0), tout);
     } else {
       total = (hitBox && tout > tin) ? glowSeg(q, b, h, tin, tout) : 0.0;
     }
     total = max(total, 0.0);
     // closest point for density + downward bias (lamps emit downwards)
-    vec3 cp = uCamPos + rd * clamp(b, 0.0, tMax);
-    float dens = ext ? fogDensityAt(cp) : uDustDensity;
+    float tc = clamp(b, 0.0, tMax);
+    vec3 cp = uCamPos + rd * tc;
+    float dens = ext ? fogDensityAt(cp) * mix(0.35, 1.0, fogRamp(tc)) : uDustDensity;
     float down = mix(1.0, smoothstep(-0.6, 0.6, (lp.y - cp.y) / max(length(cp - lp), 0.1)) * 1.6 + 0.15, uGlowCol[i].w);
-    float trans = exp(-dens * clamp(b, 0.0, tMax) * 0.7);
-    // forward-scattering lobe: halos concentrate around lamps when looking toward them
+    float trans = exp(-dens * tc * 0.7);
+    // forward-scattering lobe: halos hug the lamps instead of veiling the frame
     float toward = max(dot(rd, normalize(lp - uCamPos)), 0.0);
-    float lobe = 0.1 + 1.5 * pow(toward, 32.0) + 0.4 * pow(toward, 4.0);
+    float lobe = 0.025 + 1.6 * pow(toward, 48.0) + 0.3 * pow(toward, 8.0);
     acc += uGlowCol[i].rgb * total * dens * down * trans * 0.08 * uGlowGain * lobe;
   }
   gl_FragColor = vec4(acc, 1.0);
@@ -220,6 +226,7 @@ uniform vec2 uVolTexel;
 uniform vec3 uCamPos;
 uniform float uFogDensity;
 uniform float uFogHeight;
+uniform float uFogStart;
 uniform float uDustDensity;
 uniform vec3 uFogColor;
 uniform vec3 uFogColorHigh;
@@ -257,13 +264,15 @@ void main() {
   if (sky) tMax = 600.0;
   vec2 bi = boxIntersect(uCamPos, rd, uBoxMin, uBoxMax);
   float tin = clamp(bi.x, 0.0, tMax), tout = clamp(bi.y, 0.0, tMax);
+  // exterior fog only starts beyond uFogStart (clear air near the camera)
+  float fs = min(uFogStart, tMax);
   float od;
   if (bi.x < bi.y && tout > tin) {
-    od = heightFogOD(uCamPos, rd, 0.0, tin) + heightFogOD(uCamPos, rd, tout, tMax) + uDustDensity * (tout - tin);
+    od = heightFogOD(uCamPos, rd, fs, max(tin, fs)) + heightFogOD(uCamPos, rd, max(tout, fs), tMax) + uDustDensity * (tout - tin);
   } else {
-    od = heightFogOD(uCamPos, rd, 0.0, tMax);
+    od = heightFogOD(uCamPos, rd, fs, tMax);
   }
-  if (sky) od = max(od, 0.0) * 0.9;
+  if (sky) od = max(od, 0.0) * 0.75;
   float T = exp(-od);
   vec3 fogCol = mix(uFogColor, uFogColorHigh, clamp(rd.y * 2.5 + 0.2, 0.0, 1.0));
   fogCol *= 1.0 + uLightning * 6.0;
@@ -330,6 +339,8 @@ uniform vec2 uResolution;
 uniform float uTime;
 uniform float uFrame;
 uniform float uBloomStrength;
+uniform float uSharpen;
+uniform float uContrast;
 uniform float uDistortion;
 uniform float uCA;
 uniform float uVignette;
@@ -363,6 +374,13 @@ vec3 agx(vec3 val) {
   val = (val - min_ev) / (max_ev - min_ev);
   return agxDefaultContrastApprox(val);
 }
+// AgX look: a little more contrast/saturation than the neutral base ("punchy"-like)
+vec3 agxLook(vec3 val) {
+  const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
+  val = pow(max(val, 0.0), vec3(uContrast));
+  float luma = dot(val, lw);
+  return luma + (1.0 + (uContrast - 1.0) * 0.6) * (val - luma);
+}
 vec3 agxEotf(vec3 val) {
   const mat3 agx_mat_inv = mat3(1.19687900512017, -0.0528968517574562, -0.0529716355144438,
                                 -0.0980208811401368, 1.15190312990417, -0.0980434501171241,
@@ -384,8 +402,9 @@ vec2 distort(vec2 uv, float k) {
 vec3 sampleScene(vec2 uv) {
   vec3 c = texture2D(tColor, uv).rgb;
   vec3 b = texture2D(tBloom, uv).rgb;
-  return mix(c, b, uBloomStrength) + b * uBloomStrength * 0.35;
+  return mix(c, b, uBloomStrength);
 }
+float lumaOf(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 
 void main() {
   vec2 uv = vUv;
@@ -403,6 +422,23 @@ void main() {
   col.r = sampleScene(uvR).r;
   col.g = sampleScene(uvG).g;
   col.b = sampleScene(uvB).b;
+
+  // contrast-adaptive sharpening in log-luminance (HDR safe): restores the detail lost to the
+  // lens resample and keeps the image crisp at native resolution
+  if (uSharpen > 0.0) {
+    vec2 tx = 1.0 / uResolution;
+    float lc = lumaOf(texture2D(tColor, uvG).rgb);
+    float ln = lumaOf(texture2D(tColor, uvG + vec2(0.0, tx.y)).rgb);
+    float ls = lumaOf(texture2D(tColor, uvG - vec2(0.0, tx.y)).rgb);
+    float le = lumaOf(texture2D(tColor, uvG + vec2(tx.x, 0.0)).rgb);
+    float lw = lumaOf(texture2D(tColor, uvG - vec2(tx.x, 0.0)).rgb);
+    float mn = min(lc, min(min(ln, ls), min(le, lw))), mx = max(lc, max(max(ln, ls), max(le, lw)));
+    float avg = (ln + ls + le + lw) * 0.25;
+    // less sharpening where local contrast is already high (no ringing on lamp edges)
+    float adapt = 1.0 - smoothstep(0.2, 2.0, log2((mx + 1e-4) / (mn + 1e-4)));
+    float k = clamp(log2((lc + 1e-4) / (avg + 1e-4)), -0.6, 0.6) * uSharpen * adapt;
+    col *= exp2(k);
+  }
 
   // camera motion blur via depth reprojection
   if (uMotionBlur > 0.0) {
@@ -432,7 +468,7 @@ void main() {
   col += uFlash;
 
   // tone map
-  col = agxEotf(agx(col));
+  col = agxEotf(agxLook(agx(col)));
 
   // grade: lift / gain, saturation, split tone (teal shadows, warm highlights)
   float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
@@ -453,8 +489,8 @@ void main() {
   // sensor noise: stronger in shadows, slightly chromatic
   float n1 = hash12(gl_FragCoord.xy + fract(uTime * 13.17) * 517.0) - 0.5;
   float n2 = hash12(gl_FragCoord.xy * 1.37 + fract(uTime * 7.31) * 291.0) - 0.5;
-  float shadowAmt = 1.0 - smoothstep(0.0, 0.45, l);
-  col += (vec3(n1) + vec3(n2, -n2, n2) * 0.35) * uGrain * (0.35 + shadowAmt);
+  float shadowAmt = 1.0 - smoothstep(0.0, 0.3, l);
+  col += (vec3(n1) + vec3(n2, -n2, n2) * 0.25) * uGrain * (0.5 + shadowAmt * 0.7);
   col *= 1.0 - uFade;
 
   vec3 outc = linearToSrgb(clamp(col, 0.0, 1.0));

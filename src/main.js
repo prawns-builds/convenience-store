@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { detectQuality, resolveQuality } from './config.js';
+import { detectQuality, resolveQuality, renderPixelRatio } from './config.js';
 import { setCanvasAniso } from './gfx/CanvasTextures.js';
 import { G } from './gfx/Materials.js';
 import { World } from './world/World.js';
@@ -51,7 +51,6 @@ async function start() {
   const btn = document.getElementById('ov-start');
   const progress = (p, s) => { bar.style.width = `${Math.round(p * 100)}%`; if (s) status.textContent = s + '…'; };
 
-  const dpr = Math.min(devicePixelRatio || 1, q.maxDpr);
   renderer.setPixelRatio(1);
   renderer.setSize(innerWidth, innerHeight, false);
 
@@ -73,6 +72,16 @@ async function start() {
   const game = new Game({ renderer, world, pipeline, camera, input, player, flashlight, quality: q, params });
   window.__game = game;
 
+  // Prewarm: compile the programs of things that only appear later (passing car, figures,
+  // phone, post passes) so nothing hitches mid-game.
+  {
+    status.textContent = 'WARMING UP…';
+    const hidden = [];
+    world.scene.traverse((o) => { if (o.visible === false) { hidden.push(o); o.visible = true; } });
+    try { if (renderer.compileAsync) await Promise.all([renderer.compileAsync(world.scene, camera), pipeline.precompile()]); } catch (e) { /* lazy */ }
+    for (const o of hidden) o.visible = false;
+  }
+
   const resize = () => {
     const w = innerWidth, h = innerHeight;
     renderer.setSize(w, h, false);
@@ -84,7 +93,7 @@ async function start() {
     camera.fov = THREE.MathUtils.radToDeg(vfov);
     camera.aspect = aspect;
     camera.updateProjectionMatrix();
-    pipeline.setSize(w, h, dpr * game.dynScale);
+    pipeline.setSize(w, h, renderPixelRatio(q, w, h) * game.dynScale);
   };
   game.onResize = resize;
   addEventListener('resize', resize);
@@ -140,6 +149,8 @@ async function start() {
       for (const [k, v] of Object.entries(over.pipeline ?? {})) pipeline.params[k] = v;
       if (over.flash !== undefined) flashlight.on = !!over.flash;
       if (over.breaker !== undefined) world.setGroupLevel(0, over.breaker);
+      if (over.lamp !== undefined) world.setGroupLevel(1, over.lamp);
+      window.__game.events.state.blackout = over.approach ? false : true; // no scripted blackout unless asked
       if (over.ending) window.__game.events.startEnding();
       if (over.figs) { const ev = window.__game.events; ev.forcePump = !!over.figs.pump; ev.figRoad.visible = !!over.figs.road; ev.state.phoneAnswered = !!over.figs.cctv; ev.state.figureRoad = over.figs.road ? 'visible' : 'hidden'; }
       if (over.lightning) window.__game.events.lightning(over.lightning);

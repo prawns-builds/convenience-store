@@ -25,7 +25,8 @@ export class Events {
     this.flash = 0;
     this.flashSeq = [];
     this.baseSky = G.uSkyColor.value.clone();
-    this.state = { enteredStore: false, phoneRang: false, phoneAnswered: false, breakerOn: false, figureRoad: 'hidden', pumpFigure: 0, lookTime: 0, knocked: false, payphone: 0 };
+    this.state = { blackout: false, enteredStore: false, phoneRang: false, phoneAnswered: false, breakerOn: false, figureRoad: 'hidden', pumpFigure: 0, lookTime: 0, knocked: false, payphone: 0 };
+    if (game.params.has('blackout')) this.state.blackout = true;
     const W = game.world;
     // figure (shared dark material, faintly lit by flashlight)
     const mat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.9 });
@@ -97,20 +98,53 @@ export class Events {
   }
   _outsideNearCanopy() { const p = this.g.player.pos; return p.x > -1 && p.x < 22 && p.z > -15 && p.z < 30; }
 
+  // ---------------------------------------------------------------- approach blackout
+  // Walking up to the store: the caged wall lamp by the ICE chest buzzes, stutters and pops,
+  // then the sales floor lights drop out. Coolers, the EXIT sign and the faulty troffer (own
+  // circuit) stay on; the canopy keeps humming.
+  _checkApproach() {
+    const st = this.state;
+    if (st.blackout || this.t < 2.0) return;
+    const p = this.g.player.pos;
+    const dLamp = Math.hypot(p.x - 0.6, p.z - 10.3);
+    const dDoor = Math.hypot(p.x - 0.6, p.z - 2.6);
+    const inside = p.x > -10 && p.x < 0 && p.z > -7 && p.z < 15;
+    if (dLamp < 9.5 || dDoor < 8.5 || inside) this.blackout();
+  }
+
+  blackout() {
+    const st = this.state;
+    if (st.blackout) return;
+    st.blackout = true;
+    const g = this.g, W = g.world;
+    const lampPos = new THREE.Vector3(0.25, 3.0, 10.3);
+    const stutter = [0.45, 1.0, 0.15, 0.9, 0.0, 0.7, 0.05, 0.55];
+    stutter.forEach((lv, i) => this.after(i * 0.075 + Math.random() * 0.02, () => W.setGroupLevel(GROUP.LAMP, lv)));
+    this.after(0.66, () => { W.setGroupLevel(GROUP.LAMP, 0); g.audio?.play('pop', lampPos); });
+    const storePos = new THREE.Vector3(-4.2, 2.9, 0.4);
+    this.after(2.1, () => { W.setGroupLevel(GROUP.STORE, 0.5); g.audio?.play('powerdown', storePos); });
+    this.after(2.2, () => W.setGroupLevel(GROUP.STORE, 0.85));
+    this.after(2.32, () => W.setGroupLevel(GROUP.STORE, 0.15));
+    this.after(2.45, () => W.setGroupLevel(GROUP.STORE, 0.4));
+    this.after(2.55, () => W.setGroupLevel(GROUP.STORE, 0.0));
+    this.after(4.2, () => { if (!g.flashlight.on) g.hud.subtitle('[F] Phone flashlight', 3.5); });
+  }
+
   // ---------------------------------------------------------------- interactions
   breaker() {
     const g = this.g, W = g.world;
-    const on = W.groupLevels[GROUP.BREAKER] > 0.5;
+    const on = W.groupLevels[GROUP.STORE] > 0.5;
     g.audio?.play('breaker', g.world.ctx?.breakerPos);
     if (on) {
-      W.setGroupLevel(GROUP.BREAKER, 0);
+      W.setGroupLevel(GROUP.STORE, 0);
       g.hud.subtitle('The sales floor goes dark.');
       return;
     }
     // fluorescent start-up: stutter then steady
     this.state.breakerOn = true;
+    this.state.blackout = true;
     const seq = [0.0, 0.25, 0.0, 0.0, 0.6, 0.1, 0.0, 0.9, 0.3, 1.0];
-    seq.forEach((lv, i) => this.after(0.25 + i * 0.12 + Math.random() * 0.05, () => { W.setGroupLevel(GROUP.BREAKER, lv); if (lv > 0.2) g.audio?.play('tink', new THREE.Vector3(-4.8, 2.9, -1)); }));
+    seq.forEach((lv, i) => this.after(0.25 + i * 0.12 + Math.random() * 0.05, () => { W.setGroupLevel(GROUP.STORE, lv); if (lv > 0.2) g.audio?.play('tink', new THREE.Vector3(-4.8, 2.9, -1)); }));
     this.after(2.0, () => g.hud.subtitle('The lights hum back on.'));
     // the store phone rings a little later
     if (!this.state.phoneRang) this.after(14, () => this.ringPhone());
@@ -168,7 +202,7 @@ export class Events {
     const g = this.g, W = g.world;
     g.audio?.play('sting');
     g.glitch(1.2);
-    [0.9, 0.15, 0.7, 0.0, 0.4, 0.0].forEach((lv, i) => this.after(0.1 + i * 0.14, () => { W.setGroupLevel(GROUP.BREAKER, lv); if (lv > 0.3) g.audio?.play('tink', new THREE.Vector3(-4.8, 2.9, -1)); }));
+    [0.9, 0.15, 0.7, 0.0, 0.4, 0.0].forEach((lv, i) => this.after(0.1 + i * 0.14, () => { W.setGroupLevel(GROUP.STORE, lv); if (lv > 0.3) g.audio?.play('tink', new THREE.Vector3(-4.8, 2.9, -1)); }));
     this.after(0.95, () => { this.intDead = true; });
     this.after(2.3, () => {
       this.placeInView(this.figPump, 3.5, 7.0);
@@ -225,6 +259,7 @@ export class Events {
     this.t += dt;
     // pending timers
     for (let i = this.pending.length - 1; i >= 0; i--) if (this.pending[i].t <= this.t) { const p = this.pending.splice(i, 1)[0]; p.fn(); }
+    this._checkApproach();
     // lightning envelope
     let f = 0;
     for (const [t0, s] of this.flashSeq) { const dtt = this.t - t0; if (dtt >= 0) f = Math.max(f, s * Math.exp(-dtt * 14)); }

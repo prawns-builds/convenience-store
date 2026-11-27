@@ -55,6 +55,8 @@ export class AudioEngine {
     // ---- fluorescent buzz (canopy) + interior ballast + cooler hum (positional)
     this.buzzExt = this._buzz(new THREE.Vector3(6.5, 4.2, -2.5), 120, 0.05);
     this.buzzInt = this._buzz(new THREE.Vector3(-6.4, 2.9, -1.2), 120, 0.035);
+    this.buzzStore = this._buzz(new THREE.Vector3(-4.2, 2.9, 0.4), 120, 0.028);   // sales-floor ballasts
+    this.buzzLamp = this._buzz(new THREE.Vector3(0.25, 3.0, 10.3), 60, 0.018);    // wall lamp by the ICE chest
     this.hum = this._hum(new THREE.Vector3(-9.0, 1.2, -2.0));
     // counter radio: AM static with slow fading carrier
     {
@@ -258,6 +260,23 @@ export class AudioEngine {
         this._noiseHit(this.master, t, { buf: this.pink, freq: 380, q: 6, peak: 0.12, a: 1.0, d: 3 });
         break;
       }
+      case 'pop': {
+        // bulb burst: sharp crack, low thump, glass tinkle and a fizzing filament
+        this._noiseHit(dest, t, { buf: this.white, type: 'highpass', freq: 2200, peak: 0.55, d: 0.05 });
+        this._noiseHit(dest, t, { buf: this.brown, type: 'lowpass', freq: 380, peak: 0.6, d: 0.14 });
+        for (let i = 0; i < 7; i++) this._noiseHit(dest, t + 0.04 + Math.random() * 0.45, { freq: 4800 + Math.random() * 4500, q: 9, peak: 0.025 + Math.random() * 0.04, d: 0.05 });
+        this._noiseHit(dest, t + 0.02, { buf: this.crackle, type: 'bandpass', freq: 2800, q: 1, peak: 0.12, d: 0.7 });
+        break;
+      }
+      case 'powerdown': {
+        // contactor clunk, then the ballast hum winding down
+        this._noiseHit(dest, t, { buf: this.brown, type: 'lowpass', freq: 170, peak: 1.0, d: 0.4 });
+        this._noiseHit(dest, t, { freq: 1700, q: 1.5, peak: 0.14, d: 0.05 });
+        const o = this._tone(dest, t, 120, { type: 'sawtooth', peak: 0.06, a: 0.01, d: 1.4 });
+        o.frequency.setValueAtTime(120, t);
+        o.frequency.exponentialRampToValueAtTime(38, t + 1.4);
+        break;
+      }
       case 'knock': for (let i = 0; i < 3; i++) { this._noiseHit(dest, t + i * 0.28, { buf: this.brown, type: 'lowpass', freq: 300, peak: 0.9, d: 0.12 }); this._noiseHit(dest, t + i * 0.28, { freq: 900, q: 2, peak: 0.15, d: 0.05 }); } break;
       default: break;
     }
@@ -315,6 +334,17 @@ export class AudioEngine {
     this.buzzExt.crackle.gain.setTargetAtTime(ext < 0.9 ? 0.05 : 0.0, t, 0.02);
     this.buzzInt.gain.gain.setTargetAtTime(this.buzzInt.base * int, t, 0.02);
     this.buzzInt.crackle.gain.setTargetAtTime(int > 0.05 && int < 0.85 ? 0.06 : 0.0, t, 0.02);
+  }
+
+  setStore(level) {
+    if (!this.ctx) return;
+    this.buzzStore.gain.gain.setTargetAtTime(this.buzzStore.base * level, this.ctx.currentTime, 0.03);
+  }
+  setLamp(level) {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.buzzLamp.gain.gain.setTargetAtTime(this.buzzLamp.base * level, t, 0.02);
+    this.buzzLamp.crackle.gain.setTargetAtTime(level > 0.05 && level < 0.9 ? 0.08 : 0.0, t, 0.02);
   }
 
   fadeOut(sec = 1.5) { if (this.master) this.master.gain.setTargetAtTime(0.0, this.ctx.currentTime, sec / 3); }

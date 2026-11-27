@@ -55,8 +55,8 @@ export class Rain {
       uBox: { value: new THREE.Vector3(26, 16, 26) },
       uWind: { value: new THREE.Vector2(0.9, -0.5) },
       uSpeed: { value: 8.5 },
-      uLen: { value: 0.34 },
-      uWidth: { value: 0.0022 },
+      uLen: { value: 0.3 },
+      uWidth: { value: 0.0016 },
       uRes: { value: new THREE.Vector2(1280, 720) },
       uIntensity: { value: 1.0 },
       uLightCount: { value: 0 },
@@ -67,7 +67,7 @@ export class Rain {
       uFlashCol: { value: new THREE.Vector3() },
       uFlashCone: { value: new THREE.Vector2(0.8, 0.9) },
       uLightning: G.uLightning,
-      uAmbient: { value: new THREE.Vector3(0.016, 0.017, 0.021) },
+      uAmbient: { value: new THREE.Vector3(0.0075, 0.008, 0.0098) },
     };
     const count = { test: 7000, low: 6000, medium: 9000, high: 12000, ultra: 16000 }[quality.name] ?? 9000;
     // ---------------------------------------------------------------- streaks
@@ -111,7 +111,7 @@ export class Rain {
           vec3 viewDir = normalize(p0 - uCamPos);
           vCol = dropLight(p0, viewDir);
           float dist = length(p0 - uCamPos);
-          vA = (wpx / wdraw) * smoothstep(0.3, 1.2, dist) * smoothstep(uBox.x * 0.5, uBox.x * 0.25, dist) * 1.5;
+          vA = (wpx / wdraw) * smoothstep(0.5, 1.6, dist) * smoothstep(uBox.x * 0.5, uBox.x * 0.25, dist) * 0.9;
         }`,
       fragmentShader: /* glsl */ `
         varying vec2 vQ; varying vec3 vCol; varying float vA;
@@ -250,11 +250,15 @@ export class Rain {
     // choose static lights for rain illumination (exterior only)
     const U = this.uniforms;
     let n = 0;
+    this.lightGroups = [];
+    this.lightBase = [];
     for (const L of lights) {
       if (n >= 16) break;
       if (!L.exteriorRain) continue;
       U.uLightPos.value[n].set(L.pos.x, L.pos.y, L.pos.z, L.rainRange ?? 12);
       U.uLightCol.value[n].set(L.color.r, L.color.g, L.color.b).multiplyScalar(L.rainPower ?? L.intensity * 0.02);
+      this.lightBase.push(U.uLightCol.value[n].clone());
+      this.lightGroups.push(L.group ?? -1);
       n++;
     }
     U.uLightCount.value = n;
@@ -262,6 +266,13 @@ export class Rain {
 
   update(camera, flashlight, res, groupLevels) {
     const U = this.uniforms;
+    // switchable lights (the wall lamp, the faulty canopy tube) also stop lighting the rain
+    if (groupLevels && this.lightGroups) {
+      for (let i = 0; i < this.lightGroups.length; i++) {
+        const gi = this.lightGroups[i];
+        if (gi >= 0) U.uLightCol.value[i].copy(this.lightBase[i]).multiplyScalar(groupLevels[gi]);
+      }
+    }
     U.uCamPos.value.setFromMatrixPosition(camera.matrixWorld);
     U.uRes.value.set(res.x, res.y);
     const L = flashlight.light;

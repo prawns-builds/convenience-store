@@ -20,7 +20,11 @@ import { createFlashlightLight } from '../player/Flashlight.js';
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
 // Light groups (switchable / flickering). Channel index into the baked group texture.
-export const GROUP = { BREAKER: 0, FLICKER_EXT: 1, FLICKER_INT: 2 };
+//  STORE       sales-floor lights (troffers, pendants): on at start, cut when you approach
+//  LAMP        the caged wall lamp by the ICE chest: pops when you approach
+//  FLICKER_EXT faulty canopy tube
+//  FLICKER_INT faulty sales-floor troffer + restroom vanity (own circuit, keeps sputtering)
+export const GROUP = { STORE: 0, LAMP: 1, FLICKER_EXT: 2, FLICKER_INT: 3 };
 
 class BuildContext {
   constructor(world) {
@@ -75,9 +79,10 @@ export class World {
     this.scene = new THREE.Scene();
     this.scene.matrixWorldAutoUpdate = true;
     this.colliders = [];
-    this.groupLevels = [1, 1, 1];
-    this.groupColors = [new THREE.Color(0xe8f0ff), new THREE.Color(0xdff0ff), new THREE.Color(0xd8f4e6)];
-    this.groupEmissives = [[], [], []];
+    this.groupLevels = [1, 1, 1, 1];
+    // one colour per group (group lights bake luminance only)
+    this.groupColors = [new THREE.Color(0xffc893), new THREE.Color(0xffa65c), new THREE.Color(0xe4eeff), new THREE.Color(0xdcecff)];
+    this.groupEmissives = [[], [], [], []];
     this.updaters = [];
   }
 
@@ -91,15 +96,14 @@ export class World {
     const ts = q.texSize;
     const tex = {};
     const surfs = [SURF.ASPHALT, SURF.CONCRETE, SURF.STUCCO, SURF.PLASTER, SURF.VCT, SURF.CEILING, SURF.METAL, SURF.WOOD, SURF.GROUNDCOVER];
-    for (let i = 0; i < surfs.length; i++) {
-      tex[surfs[i].name] = gen.surface(surfs[i], surfs[i].name === 'asphalt' || surfs[i].name === 'concrete' ? ts : Math.min(ts, 1024));
-      progress(0.02 + 0.1 * (i / surfs.length), 'GENERATING SURFACES');
-      if (i % 3 === 2) await nextFrame();
-    }
-    tex.noise = gen.raw(SURF.NOISE_RAW, 512, { mipmaps: true });
-    tex.clouds = gen.raw(SURF.CLOUDS_RAW, 1024, { mipmaps: true });
-    tex.leaves = gen.raw(SURF.LEAVES_RAW, 512, { mipmaps: true, wrap: THREE.ClampToEdgeWrapping });
-    tex.grass = gen.raw(SURF.GRASS_RAW, 256, { mipmaps: true, wrap: THREE.ClampToEdgeWrapping });
+    const items = surfs.map((d) => ({ surface: d, size: d.name === 'asphalt' || d.name === 'concrete' ? ts : Math.min(ts, 1024) }));
+    items.push({ raw: SURF.NOISE_RAW, size: 512, opts: { mipmaps: true } });
+    items.push({ raw: SURF.CLOUDS_RAW, size: 1024, opts: { mipmaps: true } });
+    items.push({ raw: SURF.LEAVES_RAW, size: 512, opts: { mipmaps: true, wrap: THREE.ClampToEdgeWrapping } });
+    items.push({ raw: SURF.GRASS_RAW, size: 256, opts: { mipmaps: true, wrap: THREE.ClampToEdgeWrapping } });
+    const res = await gen.batch(items, (f) => progress(0.02 + 0.1 * f, 'GENERATING SURFACES'));
+    surfs.forEach((d, i) => { tex[d.name] = res[i]; });
+    [tex.noise, tex.clouds, tex.leaves, tex.grass] = res.slice(surfs.length);
     G.uNoiseTex.value = tex.noise;
     this.tex = tex;
     this.mats = new MaterialLib(tex);
@@ -251,18 +255,31 @@ export class World {
     this.interactables = ctx.interactables;
     this.dynamics = ctx.dynamics;
     this.meshes = meshes;
-    progress(0.92, 'CAPTURING REFLECTIONS');
+    // compile every scene program in parallel (with the final light setup) before anything
+    // renders the full scene, so the probe capture below doesn't trigger serial compiles
+    progress(0.9, 'COMPILING SHADERS');
     await nextFrame();
     this.flashLight = createFlashlightLight(this.scene, q);
-    this.captureProbes();
-    progress(0.96, 'COMPILING SHADERS');
-    await nextFrame();
+    // placeholder env maps with the final PMREM size, so the precompiled programs are the
+    // env-mapped variants used after the probe capture (no second round of compiles)
+    {
+      const pmrem = new THREE.PMREMGenerator(R);
+      this._envPlaceholder = pmrem.fromScene(new THREE.Scene(), 0, 0.1, 100, { size: q.envSize });
+      const ph = this._envPlaceholder.texture;
+      this.mats.setEnvMaps({ ext: ph, int: ph, back: ph });
+      pmrem.dispose();
+    }
+    const tc0 = performance.now();
     try {
       const cam = new THREE.PerspectiveCamera(70, 16 / 9, 0.05, 900);
       cam.layers.enableAll();
       cam.position.set(9, 1.5, 28);
       if (R.compileAsync) await R.compileAsync(this.scene, cam);
     } catch (e) { console.warn('precompile', e); }
+    console.log('[world] shaders', ((performance.now() - tc0) / 1000).toFixed(2), 's');
+    progress(0.97, 'CAPTURING REFLECTIONS');
+    await nextFrame();
+    this.captureProbes();
     this._readProbes();
     progress(1.0, 'READY');
   }
@@ -276,13 +293,14 @@ export class World {
     };
     reg('emTube', 0xe6f0ff, 26);
     reg('emTubeFlicker', 0xe6f0ff, 26, GROUP.FLICKER_EXT);
-    reg('emTroffer', 0xf0f4ff, 9, GROUP.BREAKER);
+    reg('emTroffer', 0xffe4c2, 9, GROUP.STORE);
     reg('emTrofferFlicker', 0xf0f4ff, 9, GROUP.FLICKER_INT);
     reg('emBulbWarm', 0xffb46a, 70);
+    reg('emBulbLamp', 0xffb46a, 70, GROUP.LAMP);
     reg('emBulbDim', 0xffa050, 18);
-    reg('emPendant', 0xffc58a, 30);
-    reg('emStreet', 0xffb070, 95);
-    reg('emCooler', 0xeaf2ff, 12);
+    reg('emPendant', 0xffc58a, 30, GROUP.STORE);
+    reg('emStreet', 0xffdcb4, 95);
+    reg('emCooler', 0xeaf2ff, 9);
     reg('emSignWhite', 0xfff4e0, 6);
     reg('emRed', 0xff2a1a, 14);
     reg('emGreen', 0x40ff80, 6);
@@ -334,10 +352,10 @@ export class World {
         }
         const k = (base + d) * 4;
         const s = p.stat, g = p.groups;
-        out.x += w * wd * (s[k] + g[k] * gc[0].r * gl[0] + g[k + 1] * gc[1].r * gl[1] + g[k + 2] * gc[2].r * gl[2]);
-        out.y += w * wd * (s[k + 1] + g[k] * gc[0].g * gl[0] + g[k + 1] * gc[1].g * gl[1] + g[k + 2] * gc[2].g * gl[2]);
-        out.z += w * wd * (s[k + 2] + g[k] * gc[0].b * gl[0] + g[k + 1] * gc[1].b * gl[1] + g[k + 2] * gc[2].b * gl[2]);
-        sky += w * wd * g[k + 3];
+        out.x += w * wd * (s[k] + g[k] * gc[0].r * gl[0] + g[k + 1] * gc[1].r * gl[1] + g[k + 2] * gc[2].r * gl[2] + g[k + 3] * gc[3].r * gl[3]);
+        out.y += w * wd * (s[k + 1] + g[k] * gc[0].g * gl[0] + g[k + 1] * gc[1].g * gl[1] + g[k + 2] * gc[2].g * gl[2] + g[k + 3] * gc[3].g * gl[3]);
+        out.z += w * wd * (s[k + 2] + g[k] * gc[0].b * gl[0] + g[k + 1] * gc[1].b * gl[1] + g[k + 2] * gc[2].b * gl[2] + g[k + 3] * gc[3].b * gl[3]);
+        sky += w * wd * s[k + 3];
       }
     }
     out.multiplyScalar(scale);
@@ -368,6 +386,7 @@ export class World {
     this.envMaps = { ext, int, back };
     this.mats.setEnvMaps(this.envMaps);
     pmrem.dispose();
+    if (this._envPlaceholder) { this._envPlaceholder.dispose(); this._envPlaceholder = null; }
   }
 
   setGroupLevel(i, level) {
