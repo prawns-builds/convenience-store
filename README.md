@@ -2,7 +2,7 @@
 
 An explorable, rain-soaked roadside gas station at 2:47 AM, rendered in **three.js** through the lens of a police **bodycam**. You carry a phone with its LED flashlight on. The night clerk stopped answering two hours ago.
 
-Everything here is generated at runtime: geometry, PBR textures, signage, lighting and audio. The production build is about **880 KB**, with roughly 210 KB of gzipped JS and no image, model or audio files.
+Geometry, signage, lighting and audio are generated at runtime. Surfaces, props and grime use **CC0 photoscans** from [Poly Haven](https://polyhaven.com) and [ambientCG](https://ambientcg.com): 25 PBR surface sets, 26 glTF models and a set of decal and grime masks, about 80 MB in `public/assets/`. Every scan has a procedural fallback, so the scene still builds if an asset is missing. See [CREDITS.md](CREDITS.md) for sources and authors.
 
 ![Screenshots](docs/screenshots.jpg)
 
@@ -40,6 +40,14 @@ The quality setting is on the title screen (AUTO / LOW / MEDIUM / HIGH / ULTRA) 
 - **Interior**: a checkered VCT floor and drop ceiling with two missing tiles. A glass-door cooler bank lit from inside, gondola aisles stocked with about 1,500 instanced products (procedural label atlas) and an L counter with register, lottery, candy rack and cigarette wall. Pendant lamps, a coffee station, a hot-dog roller, an ATM, an EXIT sign and a wet-floor sign. In the back: a stockroom with the breaker panel, an office with live **CCTV monitors**, and a restroom with a flickering vanity light.
 - **Story**: the clerk's rules note and the shift logbook. A breaker that brings the sales floor back with a fluorescent start-up stutter, followed by a phone call you shouldn't answer. A payphone, the van's radio, a knock on the side door, and a figure across the road that is only there while you're watching. Something waits by pump 2 when the lightning flashes, and the CCTV shows a figure that isn't in the aisle. Answer the store phone and the night ends with the bodycam losing signal. You can keep exploring after the end card.
 - **Life on the highway**: every couple of minutes a car hisses past in the rain. Its headlights bloom in the fog and streak across the wet asphalt, and the tire noise is positional with doppler.
+
+## Scanned assets
+
+- **Surfaces** (`src/gfx/ScanTextures.js`): each scan is repacked on the GPU into the engine's packed layout (albedo + roughness, normal + paint/height mask), so paint tints, grime, wetness and puddles still work. Its brightness is matched to the procedural surface it replaces, which keeps the baked lighting and grade balanced, and it tiles at its real-world size.
+- **Models** (`src/world/Models.js`): glTF props go through the same geometry builder and instancing as the procedural props. They get baked per-vertex or per-instance lighting, rain wetness, flashlight shadows and reflections. They replace the oil drums, bin, propane tanks, bench, wet-floor sign, desk, CRTs and security camera, and add lot clutter and dry roadside scrub.
+- **Decals**: scanned grime and drip masks drive wall grime and rain-wash streaks. There are also oil smears on the forecourt, muddy footprints inside the door and raindrops on the store glass.
+
+Debug parameters `?noscan`, `?nomodels` and `?nodecals` turn each set off for comparison.
 
 ## Rendering
 

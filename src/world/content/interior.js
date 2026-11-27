@@ -386,7 +386,7 @@ export function buildInterior(ctx) {
   {
     const MD = ctx.models;
     // grey steel tanker desk (CC0), kneehole facing the chair (+x); top at 0.76 m
-    if (!MD?.place(b, 'office_desk', -9.25, 0, 12.4, Math.PI / 2, [0.9, 0.965, 0.8], { ext: false, region: 'back' })) {
+    if (!MD?.place(b, 'office_desk', -9.25, 0, 12.4, Math.PI / 2, [0.9, 0.965, 0.8], { ext: false, region: 'back', matDef: { color: 0x8c8c88 } })) {
       b.box('laminate', [-9.25, 0.74, 12.4], [0.75, 0.04, 1.8], { mode: 'vtx', subdiv: 4 });
       for (const [lx, lz] of [[-9.55, 11.55], [-8.95, 11.55], [-9.55, 13.25], [-8.95, 13.25]]) b.box('steel', [lx, 0.36, lz], [0.04, 0.72, 0.04], { mode: 'vtx', subdiv: 2 });
       b.box('metalGrey' in mats.custom ? 'metalGrey' : 'plasticGrey', [-9.25, 0.36, 13.0], [0.7, 0.68, 0.45], { mode: 'vtx', subdiv: 3 });

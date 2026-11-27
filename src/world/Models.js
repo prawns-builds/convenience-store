@@ -14,7 +14,7 @@ const ROOT = (import.meta.env?.BASE_URL ?? '/') + 'assets/models/';
 
 export const MODEL_SLUGS = [
   'oil_drum_grey', 'oil_drum_green', 'oil_drum_blue', 'metal_trash_can', 'propane_tank', 'street_bench', 'cardboard_box',
-  'wet_floor_sign', 'crt_monitor', 'desk_lamp', 'office_desk', 'security_camera', 'breaker_box', 'utility_cabinet',
+  'wet_floor_sign', 'crt_monitor', 'office_desk', 'security_camera', 'utility_cabinet',
   'milk_crate', 'old_tyre', 'jerrycan', 'trash_bag', 'monobloc_chair', 'concrete_barrier', 'aircon_unit', 'rusted_can',
   'portable_generator', 'rooibos_bush', 'roadside_weeds', 'dry_branches', 'boulder', 'rock_small',
 ];

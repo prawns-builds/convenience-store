@@ -33,7 +33,7 @@ export const SCANS = {
   brick: { dir: 'exterior/brick', tile: 1.4, match: 'stucco', extra: 'one', desat: 0.1 },
   bark: { dir: 'exterior/bark', tile: 2.15, match: 'wood', extra: 'one', desat: 0.6 },
   // ---- interior
-  vct: { noAo: true, dir: 'interior/vct-checker', tile: 1.2192, match: 'vct', extra: 'one', desat: 0.6 },
+  vct: { noAo: true, dir: 'interior/vct-checker', tile: 1.2192, match: 'vct', extra: 'one', desat: 0.6, contrast: 0.5 },
   ceiling: { dir: 'interior/ceiling-tile', tile: 3.66, match: 'ceiling', extra: 'one', desat: 0.8, ao: 0.8 },
   plaster: { noAo: true, dir: 'interior/plaster-painted', tile: [2.0, 1.0], match: 'plaster', extra: 'one', desat: 1.0 },
   walltile: { dir: 'interior/wall-tile-glazed', tile: 1.3, match: 'plaster', extra: 'one', desat: 0.8, ao: 0.6 },
@@ -102,7 +102,7 @@ const PACK_FRAG = /* glsl */ `
   precision highp float;
   varying vec2 vUv;
   uniform sampler2D tA; uniform sampler2D tN; uniform sampler2D tR; uniform sampler2D tO;
-  uniform float uGain; uniform float uDesat; uniform float uAo; uniform float uMeanL; uniform float uNormal;
+  uniform float uGain; uniform float uDesat; uniform float uAo; uniform float uMeanL; uniform float uNormal; uniform float uContrast;
   ${COMMON_GLSL}
   void main() {
     vec3 a = texture2D(tA, vUv).rgb;           // linear (sRGB decoded by sampler)
@@ -110,6 +110,7 @@ const PACK_FRAG = /* glsl */ `
     float l = luma(a);
     #if MODE == 0
       a = mix(a, vec3(l), uDesat);
+      a = max(vec3(0.0), uMeanL + (a - uMeanL) * uContrast); // compress around the scan's mean
       a *= mix(1.0, ao, uAo);
       float r = texture2D(tR, vUv).r;
       gl_FragColor = vec4(clamp(a * uGain, 0.0, 1.0), clamp(r, 0.02, 1.0)); // sRGB target encodes
@@ -132,7 +133,7 @@ function packPass(renderer, maps, mode, extra, uniforms, w, h, srgb, aniso) {
     uniforms: {
       tA: { value: maps.albedo }, tN: { value: maps.normal }, tR: { value: maps.rough }, tO: { value: maps.ao },
       uGain: { value: uniforms.gain }, uDesat: { value: uniforms.desat }, uAo: { value: uniforms.ao },
-      uMeanL: { value: uniforms.meanL }, uNormal: { value: uniforms.normal },
+      uMeanL: { value: uniforms.meanL }, uNormal: { value: uniforms.normal }, uContrast: { value: uniforms.contrast },
     },
     defines: { MODE: mode, EXTRA: extra },
     fragmentShader: PACK_FRAG,
@@ -172,7 +173,7 @@ export async function applyScans(renderer, tex, pending, maxSize) {
     else if (s.detail) gain = s.detail / Math.max(scanL, 1e-4);
     const w = Math.min(maxSize, img.width);
     const h = Math.max(1, Math.round(w * img.height / img.width));
-    const u = { gain, desat, ao: s.ao ?? 0.5, meanL: scanL, normal: s.normal ?? 1 };
+    const u = { gain, desat, ao: s.ao ?? 0.5, meanL: scanL, normal: s.normal ?? 1, contrast: s.contrast ?? 1 };
     const extra = { one: 0, height: 1, paint: 2 }[s.extra ?? 'one'];
     const albedo = packPass(renderer, maps, 0, extra, u, w, h, true, aniso);
     const normal = packPass(renderer, maps, 1, extra, u, w, h, false, aniso);
