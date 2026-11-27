@@ -30,7 +30,7 @@ export class Events {
     // figure (shared dark material, faintly lit by flashlight)
     const mat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.9 });
     this.figRoad = makeFigure(mat);
-    this.figRoad.position.set(26.2, 0, -120);
+    this.figRoad.position.set(27.2, 0, 9.0);
     this.figRoad.rotation.y = -Math.PI / 2 + 0.4;
     this.figRoad.visible = false;
     W.scene.add(this.figRoad);
@@ -65,11 +65,35 @@ export class Events {
     const delay = 0.8 + Math.random() * 3.5;
     this.after(delay, () => this.g.audio?.play(delay < 1.5 ? 'crack' : 'thunder'));
     // a flash may reveal the figure at pump 2 (only after the breaker was reset)
-    if (this.state.breakerOn && this.state.pumpFigure === 0 && this._outsideNearCanopy()) {
-      this.state.pumpFigure = 1;
-      this.figPump.visible = true;
-      this.after(0.45, () => { this.figPump.visible = false; this.state.pumpFigure = 2; this.g.audio?.play('sting'); this.g.glitch(0.8); });
+    if ((this.state.breakerOn || this.forcePump) && this.state.pumpFigure === 0) {
+      const spot = this._pumpSpot();
+      if (spot) {
+        this.state.pumpFigure = 1;
+        this.figPump.position.set(spot.x, 0, spot.z);
+        const cp = this.g.camera.position;
+        this.figPump.rotation.y = Math.atan2(cp.x - spot.x, cp.z - spot.z);
+        this.figPump.visible = true;
+        this.after(0.5, () => { this.figPump.visible = false; this.state.pumpFigure = 2; this.g.audio?.play('sting'); this.g.glitch(0.8); });
+      }
     }
+  }
+  // a spot by pump 2 that is in view and not hidden behind a pillar / pump / van
+  _pumpSpot() {
+    const cam = this.g.camera;
+    const cp = cam.position;
+    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
+    const cands = [[12.55, 2.6], [12.55, 0.9], [9.85, 0.9], [9.85, 2.7], [13.6, 1.8], [12.6, -0.6], [9.8, -0.6]];
+    let best = null, bestDot = 0.55;
+    for (const [x, z] of cands) {
+      const to = new THREE.Vector3(x, 1.4, z).sub(cp);
+      const dist = to.length();
+      if (dist < 3 || dist > 40) continue;
+      const dot = to.normalize().dot(fwd);
+      if (dot < bestDot) continue;
+      if (!this.g.lineOfSight(cp, new THREE.Vector3(x, 1.4, z))) continue;
+      best = { x, z }; bestDot = dot;
+    }
+    return best;
   }
   _outsideNearCanopy() { const p = this.g.player.pos; return p.x > -1 && p.x < 22 && p.z > -15 && p.z < 30; }
 
@@ -160,7 +184,7 @@ export class Events {
       const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
       const looking = to.normalize().dot(fwd) > 0.97;
       if (looking) st.lookTime += dt;
-      if (dist < 80 || st.lookTime > 3.5) {
+      if (dist < 15 || st.lookTime > 3.0) {
         // vanish only when not observed
         if (!looking) { this.figRoad.visible = false; st.figureRoad = 'gone'; }
       }

@@ -224,6 +224,38 @@ export class Game {
 
   glitch(sec = 0.6) { this.glitchT = Math.max(this.glitchT, sec); }
 
+  // 2D line of sight against tall colliders (walls, pillars, pumps, van, shelves)
+  lineOfSight(a, b) {
+    const dx = b.x - a.x, dz = b.z - a.z;
+    const len = Math.hypot(dx, dz);
+    if (len < 1e-3) return true;
+    const ux = dx / len, uz = dz / len;
+    for (const c of this.world.colliders) {
+      if (!c.enabled || c.y1 < 1.2) continue;
+      let t = Infinity;
+      if (c.type === 'circle') {
+        const ox = a.x - c.x, oz = a.z - c.z;
+        const bb = ox * ux + oz * uz, cc = ox * ox + oz * oz - c.r * c.r;
+        const disc = bb * bb - cc;
+        if (disc >= 0) { const r = -bb - Math.sqrt(disc); if (r > 0) t = r; }
+      } else {
+        const ox = a.x - c.x, oz = a.z - c.z;
+        const lx = c.cos * ox - c.sin * oz, lz = c.sin * ox + c.cos * oz;
+        const ldx = c.cos * ux - c.sin * uz, ldz = c.sin * ux + c.cos * uz;
+        let t0 = -Infinity, t1 = Infinity, miss = false;
+        for (const [p, q, h] of [[lx, ldx, c.hx], [lz, ldz, c.hz]]) {
+          if (Math.abs(q) < 1e-6) { if (Math.abs(p) > h) { miss = true; break; } continue; }
+          let e0 = (-h - p) / q, e1 = (h - p) / q;
+          if (e0 > e1) [e0, e1] = [e1, e0];
+          t0 = Math.max(t0, e0); t1 = Math.min(t1, e1);
+        }
+        if (!miss && t0 <= t1 && t0 > 0) t = t0;
+      }
+      if (t < len - 0.4) return false;
+    }
+    return true;
+  }
+
   // distance to what the phone light hits (2D collider raycast + floor plane) -> soften near-field blow-out
   flashNearScale() {
     const cam = this.camera;
