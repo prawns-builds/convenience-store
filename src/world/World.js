@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { TextureGen } from '../gfx/TextureGen.js';
+import { fetchScans, applyScans, fetchDecals, buildDecals } from '../gfx/ScanTextures.js';
+import { fetchModels, Models } from './Models.js';
 import * as SURF from '../gfx/surfaces.js';
 import { G, emissiveMaterial } from '../gfx/Materials.js';
 import { GeoBuilder } from './GeoBuilder.js';
@@ -87,6 +89,10 @@ export class World {
     this._t0 = performance.now();
     progress(0.02, 'GENERATING SURFACES');
     await nextFrame();
+    const urlp = new URLSearchParams(location.search);
+    const scansPending = urlp.has('noscan') ? null : fetchScans();
+    const modelsPending = urlp.has('nomodels') ? {} : fetchModels();
+    const decalsPending = urlp.has('nodecals') ? null : fetchDecals();
     const gen = new TextureGen(R);
     const ts = q.texSize;
     const tex = {};
@@ -101,6 +107,19 @@ export class World {
     tex.leaves = gen.raw(SURF.LEAVES_RAW, 512, { mipmaps: true, wrap: THREE.ClampToEdgeWrapping });
     tex.grass = gen.raw(SURF.GRASS_RAW, 256, { mipmaps: true, wrap: THREE.ClampToEdgeWrapping });
     G.uNoiseTex.value = tex.noise;
+    if (scansPending) {
+      progress(0.13, 'LOADING SURFACES');
+      const got = await applyScans(R, tex, scansPending, Math.max(ts, 1024));
+      for (const k of got) UV[k] = tex[k].tile;
+      console.log('[world] scanned surfaces', got.length, got.join(' '));
+    }
+    if (decalsPending) {
+      const dec = await buildDecals(R, decalsPending);
+      if (dec) {
+        G.uDecalTex.value = dec.masks; G.uOilTex.value = dec.oil; G.uFeetTex.value = dec.feet; G.uDropTex.value = dec.dropM;
+        G.uDecalOn.value = 1;
+      }
+    }
     this.tex = tex;
     this.mats = new MaterialLib(tex);
     this._registerEmissives();
@@ -111,11 +130,14 @@ export class World {
     const tg0 = performance.now();
     const ctx = new BuildContext(this);
     this.ctx = ctx;
+    ctx.models = await Models.load(modelsPending, this.mats);
     ctx.b.uvFor = (k) => {
       const d = MATS[k] ?? this.mats.custom[k];
       if (!d || !d.tex) return [1, 1];
-      const s = (UV[d.tex] ?? 1) * (d.uvMul ?? 1);
-      return [s, s];
+      const scanned = !!this.tex[d.tex];
+      const t = scanned ? d.tex : d.texFb;
+      const s = UV[t] ?? 1, m = (scanned ? d.uvMul : (d.uvMulFb ?? d.uvMul)) ?? 1;
+      return Array.isArray(s) ? [s[0] * m, s[1] * m] : [s * m, s * m];
     };
     buildStore(ctx);
     buildCanopy(ctx);

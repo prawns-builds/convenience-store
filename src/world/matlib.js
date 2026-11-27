@@ -15,8 +15,8 @@ export const MATS = {
   pillarWhite: { tex: 'stucco', paint: 0xdedad0, porosity: 0.5, wetRough: 0.25, grime: 0.3, uvMul: 0.5 },
   pillarGreen: { tex: 'stucco', paint: 0x2c4a3e, porosity: 0.5, wetRough: 0.25, grime: 0.2, uvMul: 0.5 },
   canopyUnder: { tex: 'concrete', color: 0xd9d5cb, porosity: 0.6, wetRough: 0.3, grime: 0.32 },
-  roof: { tex: 'asphalt', color: 0x888888, porosity: 0.3, wetRough: 0.15 },
-  brick: { tex: 'stucco', paint: 0x5a3328, porosity: 0.6, wetRough: 0.3, grime: 0.4 },
+  roof: { tex: 'roof', texFb: 'asphalt', color: 0x888888, porosity: 0.3, wetRough: 0.15 },
+  brick: { tex: 'brick', texFb: 'stucco', color: 0x5a5a5a, paintFb: 0x5a3328, porosity: 0.6, wetRough: 0.3, grime: 0.4 },
   metalWhite: { tex: 'metal', paint: 0xe2dccb, porosity: 0.2, wetRough: 0.12 },
   metalCream: { tex: 'metal', paint: 0xd4c9a8, porosity: 0.2, wetRough: 0.12 },
   metalRed: { tex: 'metal', paint: 0x8e1d18, porosity: 0.2, wetRough: 0.12 },
@@ -24,33 +24,33 @@ export const MATS = {
   metalDark: { tex: 'metal', paint: 0x34383a, porosity: 0.2, wetRough: 0.12, uvMul: 2.0 },
   metalBlue: { tex: 'metal', paint: 0x23415e, porosity: 0.2, wetRough: 0.12 },
   metalYellow: { tex: 'metal', paint: 0xb88a1c, porosity: 0.2, wetRough: 0.12 },
-  metalShelf: { color: 0xc4bfae, roughness: 0.55, metalness: 0.15, grime: 0.12 },
+  metalShelf: { tex: 'shelfpaint', color: 0xc4bfae, roughness: 0.55, metalness: 0.15, grime: 0.12 },
   frame: { color: 0x1d1f20, roughness: 0.5, metalness: 0.6 },
-  aluminum: { color: 0x8c8e8e, roughness: 0.35, metalness: 0.9 },
-  steel: { color: 0x6c6d6c, roughness: 0.5, metalness: 0.85 },
+  aluminum: { tex: 'aluminum', color: 0x8c8e8e, roughness: 0.35, metalness: 0.9 },
+  steel: { tex: 'steel', color: 0x6c6d6c, roughness: 0.5, metalness: 0.85 },
   chrome: { color: 0xc8c8c8, roughness: 0.18, metalness: 1.0 },
-  rubber: { color: 0x0b0b0b, roughness: 0.82, porosity: 0.1, wetRough: 0.25 },
+  rubber: { tex: 'rubber', color: 0x0b0b0b, roughness: 0.82, porosity: 0.1, wetRough: 0.25 },
   plasticBlack: { color: 0x121212, roughness: 0.45 },
   plasticWhite: { color: 0xcfcdc5, roughness: 0.4 },
   plasticGrey: { color: 0x55585a, roughness: 0.5 },
   plasticRed: { color: 0x8a1410, roughness: 0.4 },
   wood: { tex: 'wood', color: 0xffffff, porosity: 0.8, wetRough: 0.3 },
   woodDark: { tex: 'wood', color: 0x7a5a40, porosity: 0.5, wetRough: 0.3 },
-  laminate: { tex: 'wood', color: 0x9a7a58, roughness: 0.6 },
-  counterTop: { tex: 'plaster', color: 0x8a8576, roughness: 0.35 },
+  laminate: { tex: 'wood', color: 0xb89a7a, roughness: 0.6 },
+  counterTop: { tex: 'countertop', texFb: 'plaster', color: 0x8a8576, roughness: 0.35 },
   plaster: { tex: 'plaster', color: 0xb9b49a, grime: 0.22 },
   plasterGreen: { tex: 'plaster', color: 0x6b8677, grime: 0.2 },
   plasterBack: { tex: 'plaster', color: 0x87877f, grime: 0.35 },
   ceilingTile: { tex: 'ceiling', color: 0xffffff },
-  wallTile: { tex: 'vct', color: 0xdcdcd2, roughness: 0.25, uvMul: 0.5, variant: 'wallTile', patch: { variant: 'wallTile', afterMap: 'diffuseColor.rgb *= mix(1.0, 2.45, texExtra); diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))), 0.6);' } },
-  cardboard: { color: 0x8a6a45, roughness: 0.85 },
-  cardboardDark: { color: 0x6a5035, roughness: 0.85 },
-  fabric: { color: 0x2a2a2e, roughness: 0.95 },
+  wallTile: { tex: 'walltile', texFb: 'vct', color: 0xdcdcd2, roughness: 0.25, uvMulFb: 0.5, variant: 'wallTile', patchFb: { variant: 'wallTile', afterMap: 'diffuseColor.rgb *= mix(1.0, 2.45, texExtra); diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.333))), 0.6);' } },
+  cardboard: { tex: 'cardboard', color: 0x8a6a45, roughness: 0.85 },
+  cardboardDark: { tex: 'cardboard', color: 0x6a5035, roughness: 0.85 },
+  fabric: { tex: 'fabric', color: 0x2a2a2e, roughness: 0.95 },
   vanPaint: { tex: 'metal', paint: 0xb9b5aa, porosity: 0.1, wetRough: 0.08, roughness: 0.42, uvMul: 1.6 },
   porcelain: { color: 0xe8e6e0, roughness: 0.15 },
   mirrorDirty: { color: 0x7a7c7a, roughness: 0.25, metalness: 1.0 },
-  bark: { tex: 'wood', color: 0x3a3028, porosity: 0.8, wetRough: 0.3, uvMul: 0.4 },
-  gravel: { tex: 'concrete', color: 0x5a5852, porosity: 0.8, wetRough: 0.3 },
+  bark: { tex: 'bark', texFb: 'wood', color: 0x5a4a3e, porosity: 0.8, wetRough: 0.3, uvMulFb: 0.4 },
+  gravel: { tex: 'gravel', texFb: 'concrete', color: 0x8a8882, porosity: 0.8, wetRough: 0.3 },
 };
 
 // ------------------------------------------------------------------------------------------
@@ -92,8 +92,13 @@ export class MaterialLib {
       side: def.side ?? THREE.FrontSide,
     };
     if (def.map) params.map = def.map;
+    if (def.normalMap && !def.tex) { params.normalMap = def.normalMap; params.normalScale = new THREE.Vector2(def.normalScale ?? 1, def.normalScale ?? 1); }
+    if (def.roughnessMap) params.roughnessMap = def.roughnessMap;
+    if (def.metalnessMap) params.metalnessMap = def.metalnessMap;
     let packed = false;
-    if (def.tex) {
+    // scanned texture if it loaded, else the procedural fallback (with its fallback tweaks)
+    if (def.tex && !this.tex[def.tex] && def.texFb) def = { ...def, tex: def.texFb, paint: def.paintFb ?? def.paint, uvMul: def.uvMulFb ?? def.uvMul, patch: def.patchFb ?? def.patch, color: def.paintFb ? 0xffffff : def.color };
+    if (def.tex && this.tex[def.tex]) {
       const t = this.tex[def.tex];
       params.map = t.albedo;
       params.normalMap = t.normal;
@@ -201,17 +206,20 @@ vec2 rainRipples(vec2 p, float t) {
 // Ground: lot concrete, road asphalt + markings, gravel shoulders, grass field; puddles,
 // ripples, wetness, planar reflections and analytic street lights for the long road.
 // ------------------------------------------------------------------------------------------
+const tile = (t, fb) => (t?.scan ? (Array.isArray(t.tile) ? t.tile[0] : t.tile) : fb);
+const f = (x) => Number(x).toFixed(4);
 export function makeGroundMaterial(tex) {
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, metalness: 0 });
   const U = {
     tAsphaltA: { value: tex.asphalt.albedo }, tAsphaltN: { value: tex.asphalt.normal },
     tConcA: { value: tex.concrete.albedo }, tConcN: { value: tex.concrete.normal },
     tGrassA: { value: tex.groundcover.albedo }, tGrassN: { value: tex.groundcover.normal },
+    tGravA: { value: (tex.gravel ?? tex.asphalt).albedo }, tGravN: { value: (tex.gravel ?? tex.asphalt).normal },
     uNoiseTex: G.uNoiseTex,
     uRefl0: G.uRefl0, uRefl1: G.uRefl1, uRefl2: G.uRefl2, uResolution: G.uResolution, uPlanarOn: G.uPlanarOn,
     uStreetZ0: G.uStreetZ0, uStreetSpacing: G.uStreetSpacing, uStreetX: G.uStreetX, uStreetH: G.uStreetH,
     uStreetColor: G.uStreetColor, uStreetI: G.uStreetI, uStreetSkipA: G.uStreetSkipA, uStreetSkipB: G.uStreetSkipB,
-    uRain: G.uRain,
+    uRain: G.uRain, uOilTex: G.uOilTex,
   };
   patchMaterial(m, {
     bake: 'ground',
@@ -221,6 +229,8 @@ export function makeGroundMaterial(tex) {
       uniform sampler2D tAsphaltA; uniform sampler2D tAsphaltN;
       uniform sampler2D tConcA; uniform sampler2D tConcN;
       uniform sampler2D tGrassA; uniform sampler2D tGrassN;
+      uniform sampler2D tGravA; uniform sampler2D tGravN;
+      uniform sampler2D uOilTex;
       uniform float uStreetZ0; uniform float uStreetSpacing; uniform float uStreetX; uniform float uStreetH;
       uniform vec3 uStreetColor; uniform float uStreetI; uniform float uStreetSkipA; uniform float uStreetSkipB;
       uniform float uRain;
@@ -247,12 +257,19 @@ export function makeGroundMaterial(tex) {
       wGravel *= (1.0 - wLot);
       float wGrass = clamp(1.0 - wRoad - wLot - wGravel, 0.0, 1.0);
 
-      vec2 uvA = vec2(P.x, -P.y) / 2.0;
-      vec2 uvC = vec2(P.x, -P.y) / 4.0;
-      vec2 uvG = vec2(P.x, -P.y) / 6.0;
+      vec2 uvA = vec2(P.x, -P.y) / ${f(tile(tex.asphalt, 2.0))};
+      vec2 uvC = vec2(P.x, -P.y) / ${f(tile(tex.concrete, 4.0))};
+      vec2 uvG = vec2(P.x, -P.y) / ${f(tile(tex.groundcover, 6.0))};
+      // second, rotated + offset sample of the scans breaks up visible tiling
+      vec2 uvA2 = mat2(0.8, -0.6, 0.6, 0.8) * uvA * 0.61 + 0.37;
+      vec4 aA2 = texture2D(tAsphaltA, uvA2);
+      vec2 uvV = vec2(P.x, -P.y) / ${f(tile(tex.gravel, 2.0))};
+      vec4 aV = texture2D(tGravA, uvV); vec4 nV = texture2D(tGravN, uvV);
       vec4 aA = texture2D(tAsphaltA, uvA); vec4 nA = texture2D(tAsphaltN, uvA);
       vec4 aC = texture2D(tConcA, uvC);    vec4 nC = texture2D(tConcN, uvC);
       vec4 aG = texture2D(tGrassA, uvG);   vec4 nG = texture2D(tGrassN, uvG);
+      float brk = smoothstep(0.35, 0.65, nzL.b);
+      aA = mix(aA, vec4(aA2.rgb, aA.a), brk * ${tex.asphalt.scan ? '0.5' : '0.0'});
       // lot: concrete slabs with joints + asphalt patch repairs
       vec2 slab = P / 4.5;
       vec2 sf = abs(fract(slab) - 0.5);
@@ -269,7 +286,29 @@ export function makeGroundMaterial(tex) {
       lotCol *= 1.0 - joint * 0.55;
       // tire/oil stains near pumps and parking
       float stain = smoothstep(0.55, 0.85, nzM.b) * smoothstep(0.3, 0.7, nzL.r);
+      // scanned grime breakup (CC0 dirt mask) + gum / drip spots near the entrance
+      vec4 dec = texture2D(uDecalTex, P * 0.23);
+      vec4 dec2 = texture2D(uDecalTex, P * 0.71 + 0.5);
+      stain = mix(stain, max(stain * 0.6, smoothstep(0.45, 0.9, dec.r) * smoothstep(0.25, 0.7, nzL.r)), uDecalOn);
       lotCol *= 1.0 - stain * 0.45;
+      lotCol *= 1.0 - uDecalOn * 0.35 * smoothstep(0.55, 0.95, dec2.a) * smoothstep(9.0, 2.0, length(P - vec2(1.2, 2.6)));
+      // oil smears: under pump nozzles, the van's engine bay and the parking slots
+      float oil = 0.0;
+      if (uDecalOn > 0.5) {
+        const int NOIL = 9;
+        vec4 OIL[NOIL];
+        OIL[0] = vec4(10.25, -4.6, 0.4, 1.0); OIL[1] = vec4(12.15, -7.8, 2.1, 0.9); OIL[2] = vec4(10.3, 3.3, 1.2, 1.1);
+        OIL[3] = vec4(12.1, 0.3, 2.7, 0.8); OIL[4] = vec4(3.35, -3.5, 0.2, 1.4); OIL[5] = vec4(6.6, 9.5, 1.7, 1.3);
+        OIL[6] = vec4(6.9, -12.0, 0.9, 1.6); OIL[7] = vec4(17.5, -2.0, 2.4, 1.2); OIL[8] = vec4(8.4, -1.5, 0.6, 0.7);
+        for (int i = 0; i < NOIL; i++) {
+          vec2 d = P - OIL[i].xy;
+          float c = cos(OIL[i].z), s = sin(OIL[i].z);
+          vec2 q = vec2(c * d.x - s * d.y, s * d.x + c * d.y) / (vec2(0.9, 0.83) * OIL[i].w) + 0.5;
+          if (q.x > 0.0 && q.x < 1.0 && q.y > 0.0 && q.y < 1.0) oil = max(oil, texture2D(uOilTex, q).r);
+        }
+        oil *= wLot;
+      }
+      lotCol *= 1.0 - oil * 0.65;
       // road asphalt + markings
       vec3 roadCol = aA.rgb * 0.75;
       float roadRough = aA.a;
@@ -285,16 +324,18 @@ export function makeGroundMaterial(tex) {
       roadCol = mix(roadCol, paintCol, paintM * wRoad);
       roadRough = mix(roadRough, 0.45, paintM);
       // gravel shoulder
-      vec3 gravCol = mix(aA.rgb * 1.4, aG.rgb, 0.35) * vec3(0.75, 0.72, 0.66);
+      vec3 gravCol = ${tex.gravel ? 'mix(aV.rgb, aG.rgb, 0.2)' : 'mix(aA.rgb * 1.4, aG.rgb, 0.35) * vec3(0.75, 0.72, 0.66)'};
       // combine
       vec3 alb = lotCol * wLot + roadCol * wRoad + gravCol * wGravel + aG.rgb * wGrass;
-      float rgh = lotRough * wLot + roadRough * wRoad + 0.9 * wGravel + aG.a * wGrass;
-      vec3 tN = normalize((lotN * 2.0 - 1.0) * wLot + (nA.rgb * 2.0 - 1.0) * (wRoad + wGravel) + (nG.rgb * 2.0 - 1.0) * wGrass);
-      float hgt = nA.a * (wRoad + wGravel) + nC.a * wLot + nG.a * wGrass;
+      float rgh = lotRough * wLot + roadRough * wRoad + ${tex.gravel ? 'aV.a' : '0.9'} * wGravel + aG.a * wGrass;
+      rgh = mix(rgh, 0.22, oil * 0.8);
+      vec4 nGv = ${tex.gravel ? 'nV' : 'nA'};
+      vec3 tN = normalize((lotN * 2.0 - 1.0) * wLot + (nA.rgb * 2.0 - 1.0) * wRoad + (nGv.rgb * 2.0 - 1.0) * wGravel + (nG.rgb * 2.0 - 1.0) * wGrass);
+      float hgt = nA.a * wRoad + nGv.a * wGravel + nC.a * wLot + nG.a * wGrass;
 
       // ---------------- wetness & puddles
       float exposure = smoothstep(0.15, 0.6, skyVis);
-      float pud = nzL.r * 0.75 + nzM.r * 0.35 + (0.5 - hgt) * 0.5;
+      float pud = nzL.r * 0.75 + nzM.r * 0.35 + (0.5 - hgt) * 0.5 + uDecalOn * (dec.r - 0.5) * 0.12;
       pud += wLot * 0.06 + wRoad * smoothstep(1.8, 3.6, abs(cx)) * 0.12 - wGrass * 0.25;
       pud += smoothstep(0.5, -0.3, dShoulder) * 0.1;
       float puddle = smoothstep(0.73, 0.78, pud) * exposure * uRain;
@@ -350,9 +391,18 @@ export function makeFloorMaterial(tex, opts = {}) {
   patchMaterial(m, {
     bake: 'ground',
     packed: true,
-    uniforms: { uRefl0: G.uRefl0, uRefl1: G.uRefl1, uRefl2: G.uRefl2, uResolution: G.uResolution, uNoiseTex: G.uNoiseTex, uPlanarOn: G.uPlanarOn },
+    uniforms: { uRefl0: G.uRefl0, uRefl1: G.uRefl1, uRefl2: G.uRefl2, uResolution: G.uResolution, uNoiseTex: G.uNoiseTex, uPlanarOn: G.uPlanarOn, uFeetTex: G.uFeetTex },
     variant: 'floor' + (opts.variant ?? ''),
-    beforeMain: PLANAR_GLSL,
+    fragPre: 'uniform sampler2D uFeetTex;\n',
+    beforeMain: PLANAR_GLSL + /* glsl */ `
+      // CC0 footprint strip (atlas half 'col', 0.6 x 2.4 m) laid from a to b
+      float footStrip(vec2 p, vec2 a, vec2 b, float col) {
+        vec2 ab = b - a; float L = length(ab); vec2 t = ab / L; vec2 n = vec2(-t.y, t.x);
+        vec2 d = p - a; float v = dot(d, t) / L; float u = dot(d, n) / 0.6 + 0.5;
+        if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0) return 0.0;
+        return texture2D(uFeetTex, vec2(col * 0.5 + u * 0.5, fract(v * L / 2.4))).r * smoothstep(1.0, 0.3, v);
+      }
+    `,
     afterMap: /* glsl */ `
       {
         vec4 nz = texture2D(uNoiseTex, vWorldX.xz * 0.07);
@@ -363,6 +413,12 @@ export function makeFloorMaterial(tex, opts = {}) {
         // tracked-in water near the entrance
         float nearDoor = smoothstep(4.5, 0.5, length(vWorldX.xz - vec2(-0.8, 2.6)));
         float prints = smoothstep(0.55, 0.7, nz2.r) * nearDoor;
+        if (uDecalOn > 0.5) {
+          // muddy tracks: in from the door toward the counter, and toward the back door
+          float f = max(footStrip(vWorldX.xz, vec2(-0.6, 2.7), vec2(-4.6, 2.0), 0.0), footStrip(vWorldX.xz, vec2(-1.2, 3.1), vec2(-3.4, 6.3), 1.0) * 0.7);
+          prints = max(prints * 0.5, f);
+          diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.55, 0.47, 0.38), f * 0.6);
+        }
         texRough = mix(texRough, 0.05, prints);
         diffuseColor.rgb *= 1.0 - 0.25 * prints;
       }
@@ -393,14 +449,22 @@ export function makeGlassMaterial(opts = {}) {
   patchMaterial(m, {
     bake: opts.bake ?? 'none',
     variant: 'glass' + (opts.frost ? 'f' : '') + (opts.rain ? 'r' : ''),
-    uniforms: { uNoiseTex: G.uNoiseTex, uRain: G.uRain },
-    fragPre: 'uniform float uRain;\n',
+    uniforms: { uNoiseTex: G.uNoiseTex, uRain: G.uRain, uDropTex: G.uDropTex },
+    fragPre: 'uniform float uRain;\nuniform sampler2D uDropTex;\n',
     afterMap: /* glsl */ `
       {
         vec4 nz = texture2D(uNoiseTex, vec2(dot(vWorldX.xz, vec2(0.7071)), vWorldX.y) * 0.4);
         float smudge = smoothstep(0.45, 0.8, nz.g);
         diffuseColor.a = clamp(diffuseColor.a + smudge * 0.08, 0.0, 1.0);
         texRough = 0.06 + smudge * 0.25;
+        ${opts.frost ? '' : `if (uDecalOn > 0.5) {
+          // CC0 droplet mask: beads of rain on the glass catch the lamps
+          vec3 dpG = normalize(cross(dFdx(vWorldX), dFdy(vWorldX)));
+          vec2 gu = vec2(dot(vWorldX.xz, abs(dpG.x) > abs(dpG.z) ? vec2(0.0, 1.0) : vec2(1.0, 0.0)), vWorldX.y) / 0.5;
+          float drop = texture2D(uDropTex, gu).r * uRain;
+          diffuseColor.a = clamp(diffuseColor.a + drop * 0.12, 0.0, 1.0);
+          texRough = mix(texRough, 0.3, drop * 0.6);
+        }`}
         ${opts.frost ? 'float fr = smoothstep(0.6, 0.0, vWorldX.y - 0.15 + nz.r * 0.5); diffuseColor.a += fr * 0.35; texRough += fr * 0.5; diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.8), fr);' : ''}
       }
     `,

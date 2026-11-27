@@ -250,9 +250,11 @@ export function buildInterior(ctx) {
     b.quad('emExit', [-0.515, 2.62, 2.6], [0, 0, 1], [0, 1, 0], 0.19, 0.09, { mode: 'none', uvFit: true });
     ctx.light({ kind: 'point', pos: [-0.62, 2.62, 2.6], color: 0x40ff70, intensity: 0.25, radius: 0.05, range: 5, soft: 0.2 });
   }
-  // security camera dome in the corner
-  b.box('plasticWhite', [-0.6, 2.93, -6.4], [0.14, 0.1, 0.14], { mode: 'vtx', subdiv: 2 });
-  b.cylinder('plasticBlack', [-0.6, 2.82, -6.4], 0.06, 0.08, { segments: 10, subdiv: 1 });
+  // security camera in the corner (CC0 wall-arm box camera, else a dome)
+  if (!ctx.models?.place(b, 'security_camera', -0.75, 2.62, SITE.store.z0 + SITE.store.wallT, -0.5, 1.1, { recenter: false, ext: false, region: 'int' })) {
+    b.box('plasticWhite', [-0.6, 2.93, -6.4], [0.14, 0.1, 0.14], { mode: 'vtx', subdiv: 2 });
+    b.cylinder('plasticBlack', [-0.6, 2.82, -6.4], 0.06, 0.08, { segments: 10, subdiv: 1 });
+  }
 
   // ================================================================== COFFEE STATION (north wall)
   {
@@ -305,13 +307,15 @@ export function buildInterior(ctx) {
   b.box('rubber', [-1.15, 0.005, 2.6], [1.5, 0.01, 1.7], { mode: 'vtx', subdiv: 2, region: 'int' });
   {
     // yellow A-frame wet floor sign
-    b.pushTRS(-2.4, 0, 1.15, 0.5);
-    for (const s of [1, -1]) {
-      b.pushEuler(0, 0.32, s * 0.09, s * 0.25, 0, 0);
-      b.box('metalYellow', [0, 0, 0], [0.3, 0.64, 0.015], { mode: 'vtx', subdiv: 4 });
+    if (!ctx.models?.place(b, 'wet_floor_sign', -2.4, 0, 1.15, 0.5, 1.05, { ext: false, region: 'int' })) {
+      b.pushTRS(-2.4, 0, 1.15, 0.5);
+      for (const s of [1, -1]) {
+        b.pushEuler(0, 0.32, s * 0.09, s * 0.25, 0, 0);
+        b.box('metalYellow', [0, 0, 0], [0.3, 0.64, 0.015], { mode: 'vtx', subdiv: 4 });
+        b.pop();
+      }
       b.pop();
     }
-    b.pop();
     b.circleCollider([-2.4, 0, 1.15], 0.25, 0, 0.7);
   }
   b.cylinder('plasticGrey', [-0.75, 0, 0.75], 0.24, 0.75, { segments: 14, subdiv: 3 });
@@ -380,12 +384,17 @@ export function buildInterior(ctx) {
 
   // --- office: desk, CRT monitors, chair, filing cabinet, safe, desk lamp, logbook
   {
-    b.box('laminate', [-9.25, 0.74, 12.4], [0.75, 0.04, 1.8], { mode: 'vtx', subdiv: 4 });
-    for (const [lx, lz] of [[-9.55, 11.55], [-8.95, 11.55], [-9.55, 13.25], [-8.95, 13.25]]) b.box('steel', [lx, 0.36, lz], [0.04, 0.72, 0.04], { mode: 'vtx', subdiv: 2 });
-    b.box('metalGrey' in mats.custom ? 'metalGrey' : 'plasticGrey', [-9.25, 0.36, 13.0], [0.7, 0.68, 0.45], { mode: 'vtx', subdiv: 3 });
+    const MD = ctx.models;
+    // grey steel tanker desk (CC0), kneehole facing the chair (+x); top at 0.76 m
+    if (!MD?.place(b, 'office_desk', -9.25, 0, 12.4, Math.PI / 2, [0.9, 0.965, 0.8], { ext: false, region: 'back' })) {
+      b.box('laminate', [-9.25, 0.74, 12.4], [0.75, 0.04, 1.8], { mode: 'vtx', subdiv: 4 });
+      for (const [lx, lz] of [[-9.55, 11.55], [-8.95, 11.55], [-9.55, 13.25], [-8.95, 13.25]]) b.box('steel', [lx, 0.36, lz], [0.04, 0.72, 0.04], { mode: 'vtx', subdiv: 2 });
+      b.box('metalGrey' in mats.custom ? 'metalGrey' : 'plasticGrey', [-9.25, 0.36, 13.0], [0.7, 0.68, 0.45], { mode: 'vtx', subdiv: 3 });
+    }
     b.boxCollider([-9.25, 0.4, 12.4], [0.8, 0.8, 1.85]);
     for (const [mz, s] of [[11.9, 1], [12.75, 1]]) {
-      b.box('plasticGrey', [-9.35, 0.98, mz], [0.4, 0.38, 0.42], { mode: 'vtx', subdiv: 5 });
+      // CRT faces +x; its front sits just behind the CCTV screen quad at x = -9.148
+      if (!MD?.place(b, 'crt_monitor', -9.33, 0.762, mz, Math.PI / 2, 1.0, { ext: false, region: 'back' })) b.box('plasticGrey', [-9.35, 0.98, mz], [0.4, 0.38, 0.42], { mode: 'vtx', subdiv: 5 });
       ctx.cctvScreens.push({ pos: [-9.148, 0.99, mz], normal: [1, 0, 0], w: 0.3, h: 0.24, region: 'back' });
     }
     ctx.light({ kind: 'rect', pos: [-9.0, 0.99, 12.33], u: [0, 0, 1], v: [0, 1, 0], size: [1.2, 0.3], color: 0xa8c8ff, intensity: 0.5, axis: [1, 0, 0], lambert: 1, cone: [-0.05, 0.2], range: 5, soft: 0.3 });

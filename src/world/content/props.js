@@ -39,6 +39,11 @@ function wallLamp(ctx, x, y, z, rotY, power = 9) {
 
 function bench(ctx, x, z, len, rotY) {
   const { b } = ctx;
+  // CC0 street bench (2.45 m) scaled to the slot; seat faces local +z like the procedural one
+  if (ctx.models?.place(b, 'street_bench', x, 0, z, rotY, [len / 2.45, 1, 1])) {
+    b.boxCollider([x, 0.4, z], rotY === 0 ? [len, 0.8, 0.6] : [0.6, 0.8, len]);
+    return;
+  }
   b.pushTRS(x, 0, z, rotY);
   // slats (seat)
   for (let i = 0; i < 4; i++) b.box('wood', [0, 0.45, -0.2 + i * 0.105], [len, 0.035, 0.09], { mode: 'vtx', subdiv: 4, uvScale: [1.6, 1.6] });
@@ -83,11 +88,19 @@ export function buildProps(ctx) {
     for (let i = 0; i < 6; i++) b.box('metalDark', [x0 + xw + 0.003, 0.2 + i * 0.03, cz + 0.55], [0.006, 0.012, 0.5], { mode: 'vtx', subdiv: 2 });
     b.boxCollider([cx, 0.5, cz], [xw + 0.05, 1.1, z1 - z0 + 0.05]);
   }
-  // trash can (round black bin with dome lid)
-  b.cylinder('plasticBlack', [0.48, 0, 12.45], 0.3, 0.86, { segments: 18, subdiv: 4 });
-  b.pushEuler(0.48, 0.86, 12.45, 0, 0, 0);
-  b.cylinder('plasticBlack', [0, 0, 0], 0.32, 0.14, { segments: 18, radiusTop: 0.22, subdiv: 2 });
-  b.pop();
+  // trash can: galvanised CC0 bin with a couple of bags beside it (procedural fallback)
+  const M = ctx.models;
+  if (M?.place(b, 'metal_trash_can', 0.48, 0, 12.45, 0.4, 1, { nodes: ['metal_trash_can', 'metal_trash_can_handle_left', 'metal_trash_can_handle_right'] })) {
+    M.place(b, 'trash_bag', 0.55, 0, 11.75, 1.1, 0.9);
+    M.place(b, 'trash_bag', 0.62, 0, 13.15, 2.6, 0.75);
+    b.circleCollider([0.55, 0, 11.75], 0.28, 0, 0.6);
+    b.circleCollider([0.62, 0, 13.15], 0.24, 0, 0.5);
+  } else {
+    b.cylinder('plasticBlack', [0.48, 0, 12.45], 0.3, 0.86, { segments: 18, subdiv: 4 });
+    b.pushEuler(0.48, 0.86, 12.45, 0, 0, 0);
+    b.cylinder('plasticBlack', [0, 0, 0], 0.32, 0.14, { segments: 18, radiusTop: 0.22, subdiv: 2 });
+    b.pop();
+  }
   b.circleCollider([0.48, 0, 12.45], 0.35, 0, 1);
   // electrical meter box + conduit
   b.box('metalCream', [0.09, 1.55, 6.95], [0.18, 0.62, 0.42], { mode: 'vtx', subdiv: 5 });
@@ -128,6 +141,7 @@ export function buildProps(ctx) {
     for (let j = 0; j <= 6; j++) b.box('steel', [cx, (h * j) / 6 + 0.01, cz - d / 2], [w, 0.012, 0.012], { mode: 'vtx', subdiv: 2 });
     b.box('metalWhite', [cx, h + 0.02, cz], [w + 0.04, 0.04, d + 0.04], { mode: 'vtx', subdiv: 3 });
     for (let i = 0; i < 4; i++) {
+      if (M?.place(b, 'propane_tank', cx - 0.6 + i * 0.4, 0.02, cz - 0.05, i * 2.1, 1.2)) continue;
       b.cylinder('metalWhite', [cx - 0.6 + i * 0.4, 0.02, cz - 0.05], 0.15, 0.62, { segments: 14, subdiv: 4 });
       b.cylinder('steel', [cx - 0.6 + i * 0.4, 0.64, cz - 0.05], 0.06, 0.08, { segments: 10, subdiv: 1 });
     }
@@ -161,7 +175,80 @@ export function buildProps(ctx) {
     b.circleCollider([ax, 0, az], 0.12, 0, 2);
   }
   // wet cardboard box + pallet by the north corner
-  b.box('cardboardDark', [-1.0, 0.18, -8.0], [0.6, 0.36, 0.45], { mode: 'vtx', subdiv: 4 });
+  if (!M?.place(b, 'cardboard_box', -1.0, 0, -8.0, 0.3, [1.5, 1.05, 0.9])) b.box('cardboardDark', [-1.0, 0.18, -8.0], [0.6, 0.36, 0.45], { mode: 'vtx', subdiv: 4 });
   b.box('woodDark', [-1.8, 0.07, -8.4], [1.2, 0.14, 1.0], { mode: 'vtx', subdiv: 3 });
   b.boxCollider([-1.4, 0.3, -8.2], [1.8, 0.6, 1.2]);
+  if (M) dressing(ctx, M);
+}
+
+// ------------------------------------------------------------------------------------------
+// Extra CC0 set dressing (only when the models loaded): clutter that makes the lot read as a
+// real, slightly neglected rural station. Positions avoid the play paths and door swings.
+function dressing(ctx, M) {
+  const { b } = ctx;
+  const S = SITE.store;
+  // on the pallet: milk crates + a jerrycan
+  M.place(b, 'milk_crate', -2.05, 0.14, -8.25, 0.2);
+  M.place(b, 'milk_crate', -2.05, 0.40, -8.25, 0.35);
+  M.place(b, 'milk_crate', -1.55, 0.14, -8.5, -0.3);
+  M.place(b, 'jerrycan', -1.35, 0.14, -8.1, 1.2);
+  // tyres stacked against the north wall + one leaning
+  for (let i = 0; i < 3; i++) M.place(b, 'old_tyre', -4.4 + (i % 2) * 0.03, i * 0.165, S.z0 - 0.36, i * 0.9, 1, { pre: [Math.PI / 2, 0, 0] });
+  b.circleCollider([-4.4, 0, S.z0 - 0.36], 0.32, 0, 0.5);
+  M.place(b, 'old_tyre', -5.3, 0, S.z0 - 0.15, 0.08, 1, { tilt: [-0.12, 0, 0] });
+  // smoking spot by the bench: plastic chair + rusted can ashtray
+  M.place(b, 'monobloc_chair', 0.75, 0, 0.25, -Math.PI / 2 + 0.35, 1, { collide: 'circle' });
+  M.place(b, 'rusted_can', 0.45, 0, -0.35, 0.7, 1);
+  // wall-mounted aircon condensers on the south (rear) wall, generator by the green door
+  M.place(b, 'aircon_unit', -5.4, 0.05, S.z1 + 0.22, 0, 1, { nodes: ['exterior_aircon_unit_rusted'], collide: 'box' });
+  M.place(b, 'aircon_unit', -7.6, 0.05, S.z1 + 0.22, 0, 1, { nodes: ['exterior_aircon_unit'], collide: 'box' });
+  M.place(b, 'portable_generator', 1.0, 0, 14.6, 1.9, 1, { collide: 'box' });
+  // utility cabinet at the north-east corner of the building
+  M.place(b, 'utility_cabinet', 0.24, 0, -6.55, Math.PI / 2, 1, { collide: 'box' });
+  // concrete barriers along the lot edge by the road shoulder
+  const bar = M.instanced(ctx, 'barriers', 'concrete_barrier');
+  for (const [z, r] of [[-22, 0.04], [-20.3, -0.03], [24, 0.06], [25.7, 0.0], [27.4, -0.05]]) {
+    bar.add(22.4, 0, z, Math.PI / 2 + r, 1);
+    b.boxCollider([22.4, 0.55, z], [0.5, 1.1, 1.6]);
+  }
+  // spare drum + blue drum at the back corner
+  M.place(b, 'oil_drum_blue', -9.2, 0, S.z1 + 0.6, 0.4, 1, { collide: 'circle' });
+  M.place(b, 'oil_drum_grey', -9.75, 0, S.z1 + 1.15, 2.2, 1, { collide: 'circle' });
+  scrub(ctx, M);
+}
+
+// Dry roadside scrub: CC0 rooibos bushes, weeds, dead branches and rocks, instanced with
+// per-instance baked light. Kept off the lot, the road and the building footprint.
+function scrub(ctx, M) {
+  let seed = 90731;
+  const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const spot = () => {
+    for (;;) {
+      const k = r();
+      let x, z;
+      if (k < 0.3) { x = 22.9 + r() * 1.1; z = -60 + r() * 130; }            // lot / road shoulder strip
+      else if (k < 0.55) { x = 32.3 + r() * 16; z = -60 + r() * 130; }      // across the road
+      else if (k < 0.8) { x = -32 + r() * 28; z = -42 + r() * 84; }         // behind the store
+      else { x = -2 + r() * 24; z = r() < 0.5 ? -31 - r() * 12 : 35 + r() * 12; } // past the lot ends
+      if (x > -11 && x < 23 && z > -30.5 && z < 34.5) continue;            // lot + store
+      if (x > 23.9 && x < 32.0) continue;                                    // road
+      if (Math.abs(x - SITE.streetPoleX) < 1 && Math.abs(((z - SITE.streetZ0) % SITE.streetSpacing + SITE.streetSpacing) % SITE.streetSpacing) < 1) continue;
+      return [x, z];
+    }
+  };
+  const scatter = (slug, nodes, count, s0, s1, opts = {}) => {
+    for (const n of nodes) {
+      const set = M.instanced(ctx, `${slug}_${n}`, slug, { nodes: [n], castShadow: opts.castShadow ?? true });
+      if (!set) return;
+      for (let i = 0; i < count; i++) {
+        const [x, z] = spot();
+        set.add(x, opts.sink ? -opts.sink * r() : 0, z, r() * Math.PI * 2, s0 + (s1 - s0) * r());
+      }
+    }
+  };
+  scatter('rooibos_bush', ['wild_rooibos_bush_a', 'wild_rooibos_bush_b', 'wild_rooibos_bush_c', 'wild_rooibos_bush_d', 'wild_rooibos_bush_e'], 14, 0.8, 1.5);
+  scatter('roadside_weeds', ['shrub_02_a', 'shrub_02_b', 'shrub_02_c', 'shrub_02_d'], 10, 0.6, 1.0);
+  scatter('dry_branches', ['dry_branches_medium_01_a', 'dry_branches_medium_01_b', 'dry_branches_medium_01_c'], 6, 0.8, 1.2, { castShadow: false });
+  scatter('boulder', ['namaqualand_boulder_05'], 10, 0.5, 1.2, { sink: 0.15 });
+  scatter('rock_small', ['rock_07'], 40, 0.8, 2.2, { castShadow: false, sink: 0.03 });
 }

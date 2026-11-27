@@ -27,6 +27,9 @@ export const G = {
   uRefl0: { value: null }, uRefl1: { value: null }, uRefl2: { value: null },
   uResolution: { value: new THREE.Vector2(1, 1) },
   uNoiseTex: { value: null },
+  // CC0 grime masks (R dirt, G drips, B fine grime, A spots); uDecalOn = 0 -> procedural noise
+  uDecalTex: { value: null }, uDecalOn: { value: 0 },
+  uOilTex: { value: null }, uFeetTex: { value: null }, uDropTex: { value: null },
   // street lights (analytic, ground only)
   uStreetZ0: { value: 8 }, uStreetSpacing: { value: 32 }, uStreetX: { value: 25.2 }, uStreetH: { value: 8.6 },
   uStreetColor: { value: new THREE.Vector3(1.0, 0.62, 0.32) }, uStreetI: { value: 110 },
@@ -74,6 +77,8 @@ uniform float uWetRough;
 uniform vec3 uPaintColor;
 uniform float uPaintOn;
 uniform sampler2D uNoiseTex;
+uniform sampler2D uDecalTex;
+uniform float uDecalOn;
 uniform float uGrime;
 uniform float uStreakOn;
 uniform float uPacked;
@@ -171,8 +176,12 @@ float texExtra = 1.0;
 #endif
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uPaintColor, texExtra * uPaintOn);
 vec4 nzA = texture2D(uNoiseTex, vWorldX.xz * 0.045 + vWorldX.y * 0.021);
+// world-projected scan masks: walls use (along-wall, height), floors/roofs use xz
+vec3 dpW = normalize(cross(dFdx(vWorldX), dFdy(vWorldX)));
+vec2 decUv = abs(dpW.y) > 0.7 ? vWorldX.xz : vec2(dot(vWorldX.xz, abs(dpW.x) > abs(dpW.z) ? vec2(0.0, 1.0) : vec2(1.0, 0.0)), vWorldX.y);
+vec4 decA = texture2D(uDecalTex, decUv * 0.31);
 if (uGrime > 0.0) {
-  float g = nzA.r * 0.7 + nzA.g * 0.3;
+  float g = mix(nzA.r * 0.7 + nzA.g * 0.3, decA.r * 0.75 + texture2D(uDecalTex, decUv * 1.13 + 0.37).b * 0.35, uDecalOn);
   diffuseColor.rgb *= 1.0 - uGrime * smoothstep(0.35, 0.8, g);
   // darker band near the ground (splash-back dirt)
   diffuseColor.rgb *= mix(0.62, 1.0, smoothstep(0.0, 0.7 + 0.4 * nzA.b, vWorldX.y));
@@ -180,7 +189,9 @@ if (uGrime > 0.0) {
 float wet = smoothstep(0.10, 0.42, skyVis) * uWetness * uWetOn;
 if (uStreakOn > 0.5) {
   vec4 nzS = texture2D(uNoiseTex, vec2(dot(vWorldX.xz, vec2(0.7071)) * 0.11, vWorldX.y * 0.012));
-  float streak = smoothstep(0.52, 0.75, nzS.a);
+  // rain-wash streaks hang from the roof line: scanned drip mask, stretched vertically
+  float dripM = texture2D(uDecalTex, vec2(decUv.x * 0.45, (vWorldX.y - 4.4) * 0.22)).g;
+  float streak = mix(smoothstep(0.52, 0.75, nzS.a), smoothstep(0.25, 0.7, dripM) * (0.6 + 0.4 * nzS.a), uDecalOn);
   wet = max(wet, streak * 0.8 * uWetness * smoothstep(0.02, 0.15, skyVis));
   diffuseColor.rgb *= 1.0 - 0.25 * streak * smoothstep(0.02, 0.2, skyVis);
 }
@@ -262,6 +273,7 @@ export function patchMaterial(mat, cfg = {}) {
   U.uPaintColor = { value: new THREE.Color(cfg.paint ?? 0xffffff) };
   U.uPaintOn = { value: cfg.paint !== undefined && cfg.paint !== null ? 1 : 0 };
   U.uNoiseTex = G.uNoiseTex;
+  U.uDecalTex = G.uDecalTex; U.uDecalOn = G.uDecalOn;
   U.uGrime = { value: cfg.grime ?? 0 };
   U.uStreakOn = { value: cfg.streaks ? 1 : 0 };
   U.uPacked = { value: cfg.packed ? 1 : 0 };

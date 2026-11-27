@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { SITE } from '../site.js';
+import { SITE, UV } from '../site.js';
 import { GROUP } from '../World.js';
 import { makeFloorMaterial, makeGlassMaterial } from '../matlib.js';
 import { buildDoor } from './doors.js';
@@ -100,7 +100,7 @@ export function buildStore(ctx) {
   mats.registerShared('floorConc', makeFloorMaterial({ vct: ctx.tex.concrete }, { color: 0x8a8a86, variant: 'conc' }));
   mats.registerShared('glass', makeGlassMaterial({ opacity: 0.1 }));
   mats.registerShared('glassCooler', makeGlassMaterial({ opacity: 0.06, frost: true, color: 0xc8d8e0 }));
-  const floorQuad = (mat, x0, x1, z0, z1, region) => b.quad(mat, [(x0 + x1) / 2, 0.0, (z0 + z1) / 2], [1, 0, 0], [0, 0, -1], (x1 - x0) / 2, (z1 - z0) / 2, { mode: 'ground', region, uvScale: mat === 'floorVCT' ? 1.2192 : 4 });
+  const floorQuad = (mat, x0, x1, z0, z1, region) => b.quad(mat, [(x0 + x1) / 2, 0.0, (z0 + z1) / 2], [1, 0, 0], [0, 0, -1], (x1 - x0) / 2, (z1 - z0) / 2, { mode: 'ground', region, uvScale: mat === 'floorVCT' ? (UV.vct ?? 1.2192) : (ctx.tex.concrete.scan ? UV.concrete : 4) });
   floorQuad('floorVCT', -10.02, 0.02, -7.02, PZ + 0.07, 'int');
   floorQuad('floorConc', -6.94, 0.02, PZ + 0.07, 15.02, 'back');
   floorQuad('floorVCT', -10.02, -6.94, PZ + 0.07, 15.02, 'back');

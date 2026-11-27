@@ -41,8 +41,10 @@ function pump(b, x, z, rotY, num) {
   b.boxCollider([x, 1.0, z], [0.7, 2.0, 0.9]);
 }
 
-function barrel(b, x, z, y0 = 0.0, colors = ['metalDark', 'metalWhite']) {
+function barrel(b, x, z, y0 = 0.0, colors = ['metalDark', 'metalWhite'], models = null) {
   const r = 0.29, H = 0.88;
+  const slug = colors[0] === 'metalGreen' ? 'oil_drum_green' : 'oil_drum_grey';
+  if (models && models.place(b, slug, x, y0, z, x * 1.7 + z, 1.0)) { b.circleCollider([x, y0, z], r + 0.05, y0, y0 + H); return; }
   b.cylinder(colors[0], [x, y0, z], r, H * 0.3, { segments: 18, caps: [false, false], subdiv: 3 });
   b.cylinder(colors[1], [x, y0 + H * 0.3, z], r, H * 0.38, { segments: 18, caps: [false, false], subdiv: 3 });
   b.cylinder(colors[0], [x, y0 + H * 0.68, z], r, H * 0.32, { segments: 18, caps: [false, true], subdiv: 3 });
@@ -96,7 +98,7 @@ export function buildCanopy(ctx) {
     for (const e of [-1, 1]) b.box('metalYellow', [ix, 0.09, iz + e * (L / 2 + 0.03)], [1.3, 0.18, 0.06], { mode: 'vtx', subdiv: 3 });
     pump(b, ix, iz + 1.55, 0, i * 2 + 1);
     pump(b, ix, iz - 1.55, Math.PI, i * 2 + 2);
-    barrel(b, ix + 0.05, iz + 2.55, 0.18, i === 0 ? ['metalDark', 'metalWhite'] : ['metalGreen', 'metalWhite']);
+    barrel(b, ix + 0.05, iz + 2.55, 0.18, i === 0 ? ['metalDark', 'metalWhite'] : ['metalGreen', 'metalWhite'], ctx.models);
     // bollards (filled steel pipe, yellow)
     for (const e of [-1, 1]) {
       b.cylinder('metalYellow', [ix + e * 0.42, 0.18, iz + e * (L / 2 - 0.25)], 0.085, 1.05, { segments: 12, subdiv: 4 });
@@ -107,7 +109,7 @@ export function buildCanopy(ctx) {
     b.box('metalDark', [ix - 0.32, 1.35, iz - 0.0], [0.16, 0.35, 0.28], { mode: 'vtx', subdiv: 4 });
   }
   // barrel near the store corner under canopy (like reference)
-  barrel(b, 0.65, -4.9, 0.0, ['metalDark', 'metalWhite']);
+  barrel(b, 0.65, -4.9, 0.0, ['metalDark', 'metalWhite'], ctx.models);
 
   // fluorescent tube fixtures (bare tubes in channel housings)
   const fixtures = [
