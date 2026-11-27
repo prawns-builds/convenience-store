@@ -3,7 +3,7 @@ import { TextureGen } from '../gfx/TextureGen.js';
 import * as SURF from '../gfx/surfaces.js';
 import { G, emissiveMaterial } from '../gfx/Materials.js';
 import { GeoBuilder } from './GeoBuilder.js';
-import { packAtlas } from '../bake/Atlas.js';
+import { packAtlasAuto } from '../bake/Atlas.js';
 import { LightBaker } from '../bake/LightBaker.js';
 import { MaterialLib, MATS, makeGroundMaterial } from './matlib.js';
 import { SITE, UV } from './site.js';
@@ -125,8 +125,8 @@ export class World {
     this.sky = buildSky(ctx);
 
     const parts = ctx.b.finalize();
-    const atlasW = q.lmSize, atlasH = q.lmSize;
-    const packInfo = packAtlas(parts, atlasW, atlasH, { pad: 2 });
+    const packInfo = packAtlasAuto(parts, q.lmSize, { pad: 2, densityScale: q.lmDensity ?? 1 });
+    const atlasW = packInfo.width, atlasH = packInfo.height;
     this.packInfo = packInfo;
     console.log('[world] parts', parts.length, 'atlas', atlasW, atlasH, packInfo, 'geometry', ((performance.now() - tg0) / 1000).toFixed(2), 's');
     this.colliders = ctx.b.colliders;
@@ -252,6 +252,14 @@ export class World {
     progress(0.92, 'CAPTURING REFLECTIONS');
     await nextFrame();
     this.captureProbes();
+    progress(0.96, 'COMPILING SHADERS');
+    await nextFrame();
+    try {
+      const cam = new THREE.PerspectiveCamera(70, 16 / 9, 0.05, 900);
+      cam.layers.enableAll();
+      cam.position.set(9, 1.5, 28);
+      if (R.compileAsync) await R.compileAsync(this.scene, cam);
+    } catch (e) { console.warn('precompile', e); }
     this._readProbes();
     progress(1.0, 'READY');
   }

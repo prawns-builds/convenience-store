@@ -346,11 +346,11 @@ export function buildInterior(ctx) {
     b.boxCollider([xc, 1, z], [L, 2, depth + 0.05]);
   };
   rack(-6.6, -3.0, 14.3, 0.6, -1);
-  rack(-6.6, -4.2, 7.15, 0.6, 1);
+  rack(-4.5, -2.3, 7.15, 0.6, 1);
   // pallet with drink cases
-  b.box('woodDark', [-2.0, 0.07, 8.0], [1.2, 0.14, 1.0], { mode: 'vtx', subdiv: 3 });
-  for (let i = 0; i < 9; i++) sets.pBoxesBack.place(new THREE.Vector3(-2.35 + (i % 3) * 0.36, 0.14 + Math.floor(i / 3) * 0.26, 7.8 + (r() - 0.5) * 0.06), 0, new THREE.Vector3(0.34, 0.25, 0.5), new THREE.Vector3(0, 1, 0));
-  b.boxCollider([-2.0, 0.5, 8.0], [1.25, 1.0, 1.05]);
+  b.box('woodDark', [-1.4, 0.07, 9.4], [1.2, 0.14, 1.0], { mode: 'vtx', subdiv: 3 });
+  for (let i = 0; i < 9; i++) sets.pBoxesBack.place(new THREE.Vector3(-1.75 + (i % 3) * 0.36, 0.14 + Math.floor(i / 3) * 0.26, 9.2 + (r() - 0.5) * 0.06), 0, new THREE.Vector3(0.34, 0.25, 0.5), new THREE.Vector3(0, 1, 0));
+  b.boxCollider([-1.4, 0.5, 9.4], [1.25, 1.0, 1.05]);
   // mop sink + bucket + water heater
   b.box('porcelain', [-6.4, 0.3, 9.6], [0.6, 0.6, 0.6], { mode: 'vtx', subdiv: 4 });
   b.cylinder('metalYellow', [-5.7, 0, 9.4], 0.2, 0.38, { segments: 12, subdiv: 2 });

@@ -24,7 +24,7 @@ export const MATS = {
   metalDark: { tex: 'metal', paint: 0x34383a, porosity: 0.2, wetRough: 0.12, uvMul: 2.0 },
   metalBlue: { tex: 'metal', paint: 0x23415e, porosity: 0.2, wetRough: 0.12 },
   metalYellow: { tex: 'metal', paint: 0xb88a1c, porosity: 0.2, wetRough: 0.12 },
-  metalShelf: { tex: 'metal', paint: 0xcfcabb, porosity: 0.1, wetRough: 0.12, uvMul: 3 },
+  metalShelf: { color: 0xc4bfae, roughness: 0.55, metalness: 0.15, grime: 0.12 },
   frame: { color: 0x1d1f20, roughness: 0.5, metalness: 0.6 },
   aluminum: { color: 0x8c8e8e, roughness: 0.35, metalness: 0.9 },
   steel: { color: 0x6c6d6c, roughness: 0.5, metalness: 0.85 },

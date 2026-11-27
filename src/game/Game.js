@@ -89,7 +89,12 @@ export class Game {
 
   pause(p) {
     this.paused = p;
-    if (p) document.getElementById('overlay').classList.remove('hidden');
+    if (p) {
+      document.getElementById('overlay').classList.remove('hidden');
+      const btn = document.getElementById('ov-start');
+      btn.textContent = 'RESUME';
+      document.querySelector('.ov-rec').innerHTML = '<span class="rec-dot"></span>PAUSED';
+    }
     this.audio?.setPaused(p);
   }
 

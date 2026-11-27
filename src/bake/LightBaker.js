@@ -221,8 +221,11 @@ export class LightBaker {
   constructor(renderer, opts) {
     this.renderer = renderer;
     this.opts = opts;
+    // half-float accumulation keeps VRAM modest (precision is ample for <100 samples/texel);
+    // cube/sky depth maps use float where available for distance precision.
     const canFloat = renderer.extensions.has('EXT_color_buffer_float');
-    this.accType = canFloat ? THREE.FloatType : THREE.HalfFloatType;
+    this.accType = THREE.HalfFloatType;
+    this.depthType = canFloat ? THREE.FloatType : THREE.HalfFloatType;
     this.samples = opts.samples ?? 8;
     this.skyDirs = opts.skyDirs ?? 32;
     this.cubeSize = opts.cubeSize ?? 256;
@@ -237,9 +240,9 @@ export class LightBaker {
     // shared uniforms for caster materials
     this.distUniforms = { uLightPos: { value: new THREE.Vector3() }, uSkyDir: { value: new THREE.Vector3(0, 1, 0) }, uSkyMode: { value: 0 } };
 
-    this.cubeRT = new THREE.WebGLCubeRenderTarget(this.cubeSize, { type: this.accType, format: THREE.RGBAFormat, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false, depthBuffer: true });
+    this.cubeRT = new THREE.WebGLCubeRenderTarget(this.cubeSize, { type: this.depthType, format: THREE.RGBAFormat, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false, depthBuffer: true });
     this.cubeCam = new THREE.CubeCamera(0.03, 50, this.cubeRT);
-    this.skyRT = new THREE.WebGLRenderTarget(this.skyMapSize, this.skyMapSize, { type: this.accType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: true });
+    this.skyRT = new THREE.WebGLRenderTarget(this.skyMapSize, this.skyMapSize, { type: this.depthType, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthBuffer: true });
     this.skyCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 500);
 
     this.bakeUniforms = {
@@ -326,7 +329,7 @@ export class LightBaker {
     const PW = 1024;
     const PH = Math.max(1, Math.ceil(total / PW));
     this.pointsW = PW; this.pointsH = PH; this.pointsTotal = total;
-    this.pointsAcc = makeRT(PW, PH, { type: this.accType, count: 2, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
+    this.pointsAcc = makeRT(PW, PH, { type: this.depthType, count: 2, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
     this.bakeUniforms.uPointsSize.value.set(PW, PH);
     if (total > 0) {
       const pos = new Float32Array(total * 3), nrm = new Float32Array(total * 3), tex = new Float32Array(total * 2);
@@ -559,7 +562,7 @@ export class LightBaker {
     const W = this.pointsW;
     const y0 = Math.floor(base / W), y1 = Math.floor((base + count - 1) / W);
     const rows = y1 - y0 + 1;
-    const isFloat = this.accType === THREE.FloatType;
+    const isFloat = this.depthType === THREE.FloatType;
     const read = (idx) => {
       const buf = isFloat ? new Float32Array(W * rows * 4) : new Uint16Array(W * rows * 4);
       R.readRenderTargetPixels(this.pointsAcc, 0, y0, W, rows, buf, undefined, idx);

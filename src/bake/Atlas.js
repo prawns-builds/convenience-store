@@ -2,7 +2,18 @@ import * as THREE from 'three';
 
 // Shelf-packs all lightmap charts of the given parts into a W x H atlas and writes `uv1`.
 // Texel density is scaled down globally until everything fits.
-export function packAtlas(parts, W, H, { pad = 2, minTexels = 3, densityScale = 1 } = {}) {
+// Choose the smallest atlas (power-of-two, up to maxSize) that fits at the requested density.
+export function packAtlasAuto(parts, maxSize, opts = {}) {
+  const sizes = [[512, 512], [1024, 512], [1024, 1024], [2048, 1024], [2048, 2048], [4096, 2048]].filter(([w, h]) => w <= maxSize && h <= maxSize);
+  for (const [w, h] of sizes) {
+    const r = packAtlas(parts, w, h, { ...opts, noShrink: true });
+    if (r) return { ...r, width: w, height: h };
+  }
+  const [w, h] = sizes[sizes.length - 1];
+  return { ...packAtlas(parts, w, h, opts), width: w, height: h };
+}
+
+export function packAtlas(parts, W, H, { pad = 2, minTexels = 3, densityScale = 1, noShrink = false } = {}) {
   const items = [];
   for (const part of parts) {
     if (part.mode !== 'lm') continue;
@@ -19,6 +30,7 @@ export function packAtlas(parts, W, H, { pad = 2, minTexels = 3, densityScale = 
     for (const r of rects) { r.w = r.tw + 2 * pad; r.h = r.th + 2 * pad; }
     if (shelfPack(rects, W, H)) break;
     rects = null;
+    if (noShrink) return null;
     s *= 0.92;
   }
   if (!rects) throw new Error('Lightmap atlas packing failed');

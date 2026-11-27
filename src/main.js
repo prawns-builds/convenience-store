@@ -124,6 +124,7 @@ async function start() {
       for (const [k, v] of Object.entries(over.pipeline ?? {})) pipeline.params[k] = v;
       if (over.flash !== undefined) flashlight.on = !!over.flash;
       if (over.breaker !== undefined) world.setGroupLevel(0, over.breaker);
+      if (over.lightning) window.__game.events.lightning(over.lightning);
       if (over.rainAmb !== undefined) window.__game.rain.uniforms.uAmbient.value.setScalar(over.rainAmb);
       if (over.debug !== undefined) { G.uDebugView.value = over.debug; pipeline.params.debugRaw = over.debug > 0; }
       pipeline.expo.uniforms.uReset.value = 1;

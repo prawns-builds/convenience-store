@@ -139,7 +139,7 @@ export class Events {
     for (const [t0, s] of this.flashSeq) { const dtt = this.t - t0; if (dtt >= 0) f = Math.max(f, s * Math.exp(-dtt * 14)); }
     this.flash = f;
     G.uLightning.value = f;
-    G.uSkyColor.value.copy(this.baseSky).multiplyScalar(1 + f * 90);
+    G.uSkyColor.value.copy(this.baseSky).multiplyScalar(1 + f * 260);
     g.pipeline.params.flash = f * 0.004;
     // phone ringing
     if (this.ringing > 0) {

@@ -115,8 +115,8 @@ export function buildDoor(ctx, opt) {
   ctx.dynamics.push(door);
   ctx.interact({
     name: opt.name,
-    pos: c.clone().setY(1.1),
-    radius: Math.max(0.6, w * 0.6),
+    pos: c.clone().setY(1.25),
+    radius: Math.max(0.85, w * 0.95),
     prompt: () => (door.locked ? 'LOCKED' : door.target > 0.5 ? '[E] CLOSE DOOR' : '[E] OPEN DOOR'),
     action: (game) => {
       if (door.locked) { game.audio?.play('locked', door.center); game.hud?.subtitle(opt.lockedText ?? 'It\'s locked.'); return; }

@@ -140,7 +140,7 @@ const DESIGNS = {
     x.font = `bold ${h * 0.62}px ${FONT_SERIF}`;
     const letters = ['I', 'C', 'E'];
     letters.forEach((l, i) => x.fillText(l, w * (0.25 + i * 0.25), h * 0.55));
-    weather(x, w, h, { dirt: 0.35, rust: 0.2, fade: 0.1, seed: 9, edge: 0.8 });
+    weather(x, w, h, { dirt: 0.18, rust: 0.1, fade: 0.08, seed: 9, edge: 0.5, scratches: 12 });
   },
   restroom(c, x) {
     const w = c.width, h = c.height;
