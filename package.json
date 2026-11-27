@@ -1,0 +1,19 @@
+{
+  "name": "convenience-store",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Explorable night-time roadside convenience store in three.js — bodycam aesthetic, wet reflections, phone flashlight.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource/vt323": "^5.3.0",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "vite": "^8.4.0"
+  }
+}

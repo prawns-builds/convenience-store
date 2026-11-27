@@ -1,0 +1,111 @@
+@import '@fontsource/vt323/index.css';
+
+:root {
+  --hud: rgba(236, 236, 230, 0.92);
+  --hud-dim: rgba(236, 236, 230, 0.55);
+  --hud-glow: 0 0 2px rgba(255, 255, 255, 0.35), 0 0 6px rgba(255, 255, 255, 0.08);
+  --font: 'VT323', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; width: 100%; height: 100%;
+  background: #000; overflow: hidden;
+  font-family: var(--font);
+  color: var(--hud);
+  -webkit-user-select: none; user-select: none;
+  cursor: default;
+}
+#view { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; outline: none; }
+.hidden { display: none !important; }
+
+/* ---------------------------------------------------------------- bodycam HUD */
+#hud {
+  position: fixed; inset: 0; pointer-events: none;
+  font-size: clamp(14px, 1.45vh, 22px); line-height: 1.12; letter-spacing: 0.06em;
+  text-shadow: var(--hud-glow);
+}
+#hud > div { position: absolute; }
+.hud-tl { left: 6.2vw; top: 5.2vh; }
+.hud-tr { right: 6.2vw; top: 5.2vh; text-align: right; }
+.hud-bl { left: 6.2vw; bottom: 5.8vh; }
+.hud-br { right: 6.2vw; bottom: 5.8vh; }
+.rec-dot {
+  display: inline-block; width: 0.55em; height: 0.55em; border-radius: 50%;
+  background: #e0242a; margin-right: 0.45em; vertical-align: 0.05em;
+  box-shadow: 0 0 6px rgba(255, 40, 40, 0.7);
+  animation: blink 1.2s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0.15; } }
+.batt { display: flex; align-items: center; gap: 0.45em; }
+.batt-icon {
+  position: relative; display: inline-block; width: 1.65em; height: 0.72em;
+  border: 1.5px solid var(--hud); border-radius: 1px;
+}
+.batt-icon::after {
+  content: ''; position: absolute; right: -0.25em; top: 0.17em; width: 0.15em; height: 0.3em; background: var(--hud);
+}
+#hud-batt-fill { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 85%; background: var(--hud); }
+.meter { display: flex; align-items: center; gap: 0.5em; justify-content: flex-end; }
+.bars { display: inline-flex; gap: 2px; }
+.bars i { display: inline-block; width: 0.42em; height: 0.62em; background: rgba(236, 236, 230, 0.18); }
+.bars i.on { background: var(--hud); }
+
+#prompt {
+  left: 50%; top: 58%; transform: translateX(-50%);
+  font-size: clamp(15px, 1.7vh, 24px); color: var(--hud); opacity: 0; transition: opacity 0.15s;
+  background: rgba(0, 0, 0, 0.35); padding: 0.15em 0.6em; white-space: nowrap;
+}
+#prompt.show { opacity: 1; }
+#subtitle {
+  left: 50%; bottom: 12vh; transform: translateX(-50%); max-width: 70vw; text-align: center;
+  font-size: clamp(16px, 2vh, 28px); opacity: 0; transition: opacity 0.4s;
+  background: rgba(0, 0, 0, 0.45); padding: 0.2em 0.8em;
+}
+#subtitle.show { opacity: 1; }
+
+/* ---------------------------------------------------------------- notes */
+#note {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55); pointer-events: none;
+}
+.note-paper {
+  width: min(560px, 82vw); max-height: 80vh; overflow: hidden;
+  background: linear-gradient(180deg, #d9d4c3 0%, #cfc8b3 100%);
+  color: #1d1b18; padding: 34px 38px 26px; transform: rotate(-1.2deg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 0 60px rgba(90, 70, 30, 0.25);
+  font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive; font-size: 18px; line-height: 1.55;
+  white-space: pre-wrap;
+}
+.note-hint { font-family: var(--font); font-size: 16px; color: #5a5448; margin-top: 16px; text-align: right; }
+
+/* ---------------------------------------------------------------- overlay / title */
+#overlay {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(8, 9, 10, 0.72) 0%, rgba(0, 0, 0, 0.96) 75%);
+  z-index: 10;
+}
+.ov-inner { width: min(760px, 90vw); text-align: center; text-shadow: var(--hud-glow); }
+.ov-rec { font-size: 20px; color: var(--hud-dim); letter-spacing: 0.2em; margin-bottom: 8px; }
+.ov-inner h1 { font-size: clamp(56px, 10vw, 110px); margin: 0; font-weight: normal; letter-spacing: 0.12em; line-height: 0.9; }
+.ov-sub { font-size: 20px; letter-spacing: 0.14em; color: var(--hud-dim); margin-top: 10px; }
+.ov-brief { margin: 26px auto 22px; font-size: 21px; line-height: 1.35; color: rgba(236, 236, 230, 0.78); max-width: 600px; }
+#ov-progress { width: 60%; height: 4px; background: rgba(255, 255, 255, 0.12); margin: 0 auto; }
+#ov-bar { width: 0; height: 100%; background: var(--hud); transition: width 0.2s; }
+#ov-status { font-size: 17px; margin-top: 8px; color: var(--hud-dim); letter-spacing: 0.1em; min-height: 1.2em; }
+#ov-start {
+  margin-top: 22px; font-family: var(--font); font-size: 28px; letter-spacing: 0.2em;
+  background: transparent; color: var(--hud); border: 1px solid rgba(236, 236, 230, 0.6);
+  padding: 8px 36px; cursor: pointer; text-shadow: var(--hud-glow);
+}
+#ov-start:disabled { opacity: 0.35; cursor: default; }
+#ov-start:not(:disabled):hover { background: rgba(236, 236, 230, 0.1); }
+.ov-controls { margin-top: 26px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; font-size: 18px; color: var(--hud-dim); }
+.ov-controls b { color: var(--hud); font-weight: normal; }
+.ov-quality { margin-top: 18px; font-size: 18px; color: var(--hud-dim); display: flex; gap: 14px; justify-content: center; align-items: center; }
+.ov-quality select, .ov-quality input { font-family: var(--font); font-size: 18px; background: #111; color: var(--hud); border: 1px solid #444; }
+
+#stats {
+  position: fixed; left: 8px; top: 8px; z-index: 20; font-size: 14px; line-height: 1.2;
+  background: rgba(0, 0, 0, 0.6); padding: 6px 8px; white-space: pre; pointer-events: none;
+}

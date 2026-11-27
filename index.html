@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <title>NIGHT SHIFT — Vesper Gas &amp; Grocery</title>
+    <link rel="stylesheet" href="./src/ui/style.css" />
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+
+    <div id="hud" class="hidden">
+      <div class="hud-tl">
+        <div>BODYCAM&nbsp;&nbsp;V3.4.0</div>
+        <div>UNIT 0731</div>
+      </div>
+      <div class="hud-tr">
+        <div><span class="rec-dot"></span>REC</div>
+        <div id="hud-time">2026-11-27 02:47:00</div>
+        <div id="hud-loc">CAM 02 / HOLLOW CREEK RD</div>
+      </div>
+      <div class="hud-bl">
+        <div class="batt"><span class="batt-icon"><span id="hud-batt-fill"></span></span><span id="hud-batt">92%</span></div>
+        <div id="hud-res">1536P</div>
+        <div id="hud-fov">FOV 110°</div>
+        <div id="hud-iso">ISO 800</div>
+      </div>
+      <div class="hud-br">
+        <div class="meter"><span>L</span><span class="bars" id="hud-ml"></span></div>
+        <div class="meter"><span>R</span><span class="bars" id="hud-mr"></span></div>
+      </div>
+      <div id="prompt"></div>
+      <div id="subtitle"></div>
+    </div>
+
+    <div id="note" class="hidden">
+      <div class="note-paper"><div id="note-text"></div><div class="note-hint">[E] / [ESC] close</div></div>
+    </div>
+
+    <div id="overlay">
+      <div class="ov-inner">
+        <div class="ov-rec"><span class="rec-dot"></span>NO SIGNAL</div>
+        <h1>NIGHT SHIFT</h1>
+        <div class="ov-sub">VESPER GAS &amp; GROCERY &mdash; HOLLOW CREEK RD, MILE 117</div>
+        <div class="ov-brief">
+          02:47 AM. Dispatch lost contact with the night clerk two hours ago.<br />
+          Nobody has answered the store phone since.
+        </div>
+        <div id="ov-progress"><div id="ov-bar"></div></div>
+        <div id="ov-status">INITIALIZING SENSOR…</div>
+        <button id="ov-start" disabled>LOADING</button>
+        <div class="ov-controls">
+          <span><b>WASD</b> move</span><span><b>MOUSE</b> look</span><span><b>SHIFT</b> run</span><span><b>C</b> crouch</span>
+          <span><b>F</b> phone flashlight</span><span><b>E</b> interact</span><span><b>Q</b> raise / lower phone</span><span><b>ESC</b> pause</span>
+        </div>
+        <div class="ov-quality">
+          QUALITY:
+          <select id="ov-quality">
+            <option value="auto">AUTO</option>
+            <option value="low">LOW</option>
+            <option value="medium">MEDIUM</option>
+            <option value="high">HIGH</option>
+            <option value="ultra">ULTRA</option>
+          </select>
+          <label><input type="checkbox" id="ov-headphones" checked /> AUDIO</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="stats" class="hidden"></div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
