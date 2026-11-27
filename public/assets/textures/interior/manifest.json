@@ -1,0 +1,316 @@
+[
+  {
+    "slug": "vct-checker",
+    "source": "ambientCG",
+    "assetId": "Tiles012",
+    "url": "https://ambientcg.com/view?id=Tiles012",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      1.22,
+      1.22
+    ],
+    "maps": {
+      "albedo": "vct-checker/albedo.jpg",
+      "normal": "vct-checker/normal.jpg",
+      "roughness": "vct-checker/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "(floor VCT, tex 'vct')"
+    ],
+    "notes": "Black/white marbled checker, 4x4 tiles per repeat, thin seams; reads like Armstrong-style marbled VCT. Size not published by ambientCG: estimated so one tile = 12in (0.305 m). Clean scan: add scuffs/grime/wax-dull in shader (roughness mul + dirt mask); per-tile tint jitter still possible via tile ID = floor(uv*4). 2K. No AO map in source."
+  },
+  {
+    "slug": "ceiling-tile",
+    "source": "ambientCG",
+    "assetId": "OfficeCeiling001",
+    "url": "https://ambientcg.com/view?id=OfficeCeiling001",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      3.85,
+      3.85
+    ],
+    "maps": {
+      "albedo": "ceiling-tile/albedo.jpg",
+      "normal": "ceiling-tile/normal.jpg",
+      "roughness": "ceiling-tile/roughness.jpg",
+      "ao": "ceiling-tile/ao.jpg"
+    },
+    "targetMats": [
+      "ceilingTile"
+    ],
+    "notes": "2x2 ft lay-in acoustic tiles with white T-bar grid, 6x6 tiles per repeat. Published size 3.85 m (0.64 m/tile); set repeat to 3.66 m for true 0.61 m (2 ft) tiles. Albedo is near-white: multiply by a warm yellowed tint and add water stains procedurally. Has AO. 2K. Metalness/emission maps skipped."
+  },
+  {
+    "slug": "plaster-painted",
+    "source": "ambientCG",
+    "assetId": "PaintedPlaster017",
+    "url": "https://ambientcg.com/view?id=PaintedPlaster017",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      2.0,
+      1.0
+    ],
+    "maps": {
+      "albedo": "plaster-painted/albedo.jpg",
+      "normal": "plaster-painted/normal.jpg",
+      "roughness": "plaster-painted/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "plaster",
+      "plasterBack",
+      "plasterGreen"
+    ],
+    "notes": "Smooth white painted plaster/drywall with faint hairline cracks; neutral grey-white so it can be tinted per MATS color. Image is 2:1 (2048x1024); size not published, ~2 m x 1 m estimated. Not very scuffed: keep existing grime term for scuffs/hand marks. 2K, no AO."
+  },
+  {
+    "slug": "plaster-scuffed-green",
+    "source": "ambientCG",
+    "assetId": "PaintedPlaster003",
+    "url": "https://ambientcg.com/view?id=PaintedPlaster003",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      1.5,
+      1.5
+    ],
+    "maps": {
+      "albedo": "plaster-scuffed-green/albedo.jpg",
+      "normal": "plaster-scuffed-green/normal.jpg",
+      "roughness": "plaster-scuffed-green/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "plasterGreen"
+    ],
+    "notes": "Alternate for plasterGreen: green painted wall with scratches and small paint chips. Saturated green; desaturate/tint toward 0x6b8677 in shader. Size estimated. 1K."
+  },
+  {
+    "slug": "wall-tile-glazed",
+    "source": "ambientCG",
+    "assetId": "Tiles133B",
+    "url": "https://ambientcg.com/view?id=Tiles133B",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      1.3,
+      1.3
+    ],
+    "maps": {
+      "albedo": "wall-tile-glazed/albedo.jpg",
+      "normal": "wall-tile-glazed/normal.jpg",
+      "roughness": "wall-tile-glazed/roughness.jpg",
+      "ao": "wall-tile-glazed/ao.jpg"
+    },
+    "targetMats": [
+      "wallTile"
+    ],
+    "notes": "Dirty old glazed square wall tiles with grimy grout and a few cracks, 12x12 tiles per repeat. Size estimated so tiles are ~4.25in (0.108 m), the usual US restroom wall tile. Slight cyan cast: existing wallTile patch desaturates 60%, which suits it. Has AO. 2K."
+  },
+  {
+    "slug": "laminate-wood",
+    "source": "Poly Haven",
+    "assetId": "kitchen_wood",
+    "url": "https://polyhaven.com/a/kitchen_wood",
+    "license": "CC0",
+    "author": "Rob Tuytel",
+    "realWorldSizeMeters": [
+      0.6,
+      0.6
+    ],
+    "maps": {
+      "albedo": "laminate-wood/albedo.jpg",
+      "normal": "laminate-wood/normal.jpg",
+      "roughness": "laminate-wood/roughness.jpg",
+      "ao": "laminate-wood/ao.jpg"
+    },
+    "targetMats": [
+      "laminate",
+      "wood",
+      "woodDark"
+    ],
+    "notes": "Matte grey-brown wood grain that looks like cheap printed laminate/melamine. Fits the counter front and office desk. Tint darker for woodDark. Small repeat (0.6 m), so break up tiling on large panels. 2K, has AO."
+  },
+  {
+    "slug": "countertop-laminate",
+    "source": "ambientCG",
+    "assetId": "Plastic018B",
+    "url": "https://ambientcg.com/view?id=Plastic018B",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      1.0,
+      1.0
+    ],
+    "maps": {
+      "albedo": "countertop-laminate/albedo.jpg",
+      "normal": "countertop-laminate/normal.jpg",
+      "roughness": "countertop-laminate/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "counterTop"
+    ],
+    "notes": "Dirty grey scratched plastic, used as a worn solid-colour laminate countertop with wipe marks and scratches. Tint toward 0x8a8576. Size estimated. 1K."
+  },
+  {
+    "slug": "metal-painted",
+    "source": "ambientCG",
+    "assetId": "Plastic013B",
+    "url": "https://ambientcg.com/view?id=Plastic013B",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      1.0,
+      1.0
+    ],
+    "maps": {
+      "albedo": "metal-painted/albedo.jpg",
+      "normal": "metal-painted/normal.jpg",
+      "roughness": "metal-painted/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "metalShelf",
+      "metalWhite"
+    ],
+    "notes": "Scratched white glossy plastic, used as the surface of enamel/powder-coated steel shelving and doors. Keep the material's own metalness low (~0.1-0.2). Tint toward 0xc4bfae / 0xe2dccb. No good clean painted-metal scan exists on either source (the white ones are heavily rusted). Size estimated. 1K."
+  },
+  {
+    "slug": "steel-brushed",
+    "source": "ambientCG",
+    "assetId": "Metal009",
+    "url": "https://ambientcg.com/view?id=Metal009",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      1.0,
+      1.0
+    ],
+    "maps": {
+      "albedo": "steel-brushed/albedo.jpg",
+      "normal": "steel-brushed/normal.jpg",
+      "roughness": "steel-brushed/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "steel"
+    ],
+    "notes": "Brushed steel with scratches. Brushing runs horizontally in UV. Size estimated. 1K. Metalness map skipped (all metal)."
+  },
+  {
+    "slug": "aluminum-scratched",
+    "source": "ambientCG",
+    "assetId": "Metal050B",
+    "url": "https://ambientcg.com/view?id=Metal050B",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      1.0,
+      1.0
+    ],
+    "maps": {
+      "albedo": "aluminum-scratched/albedo.jpg",
+      "normal": "aluminum-scratched/normal.jpg",
+      "roughness": "aluminum-scratched/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "aluminum"
+    ],
+    "notes": "Lightly scratched aluminium. Albedo is very bright (metal F0); multiply by MATS color. Size estimated. 1K."
+  },
+  {
+    "slug": "cardboard",
+    "source": "ambientCG",
+    "assetId": "Cardboard004",
+    "url": "https://ambientcg.com/view?id=Cardboard004",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      1.0,
+      1.0
+    ],
+    "maps": {
+      "albedo": "cardboard/albedo.jpg",
+      "normal": "cardboard/normal.jpg",
+      "roughness": "cardboard/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "cardboard",
+      "cardboardDark"
+    ],
+    "notes": "Brown kraft cardboard face with small torn/scuffed spots. No flute corrugation is visible (none in either library). Darken for cardboardDark. Size estimated. 1K."
+  },
+  {
+    "slug": "fabric",
+    "source": "ambientCG",
+    "assetId": "Fabric030",
+    "url": "https://ambientcg.com/view?id=Fabric030",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      0.5,
+      0.5
+    ],
+    "maps": {
+      "albedo": "fabric/albedo.jpg",
+      "normal": "fabric/normal.jpg",
+      "roughness": "fabric/roughness.jpg",
+      "ao": "fabric/ao.jpg"
+    },
+    "targetMats": [
+      "fabric"
+    ],
+    "notes": "Grey woven upholstery-type cloth; tint dark (0x2a2a2e). Size estimated. Has AO. 1K."
+  },
+  {
+    "slug": "rubber-mat",
+    "source": "ambientCG",
+    "assetId": "Rubber004",
+    "url": "https://ambientcg.com/view?id=Rubber004",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      0.75,
+      0.75
+    ],
+    "maps": {
+      "albedo": "rubber-mat/albedo.jpg",
+      "normal": "rubber-mat/normal.jpg",
+      "roughness": "rubber-mat/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "rubber"
+    ],
+    "notes": "Black granular rubber floor mat (gym-mat type), usable for the entrance/behind-counter mat. Published size 0.75 m. 1K, no AO."
+  },
+  {
+    "slug": "glass-smudge",
+    "source": "ambientCG",
+    "assetId": "Smear003",
+    "url": "https://ambientcg.com/view?id=Smear003",
+    "license": "CC0",
+    "author": "Lennart Demes (ambientCG)",
+    "realWorldSizeMeters": [
+      0.5,
+      0.41
+    ],
+    "maps": {
+      "albedo": "glass-smudge/albedo.jpg",
+      "normal": "glass-smudge/normal.jpg",
+      "roughness": "glass-smudge/roughness.jpg",
+      "ao": null
+    },
+    "targetMats": [
+      "(glass doors / mirrorDirty overlay)"
+    ],
+    "notes": "Wipe/smear streaks on black. Use albedo luminance as a smudge mask to raise roughness/haze on glass doors and the dirty mirror; the roughness map can be used directly. Image is 1024x841 (non-square). Size estimated. 1K, no AO."
+  }
+]
