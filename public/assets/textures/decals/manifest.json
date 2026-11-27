@@ -1,0 +1,1374 @@
+[
+  {
+    "slug": "wall-leak-streaks",
+    "source": "ambientCG",
+    "assetId": [
+      "Leaking001",
+      "Leaking003",
+      "Leaking006",
+      "Leaking010C"
+    ],
+    "url": [
+      "https://ambientcg.com/view?id=Leaking001",
+      "https://ambientcg.com/view?id=Leaking003",
+      "https://ambientcg.com/view?id=Leaking006",
+      "https://ambientcg.com/view?id=Leaking010C"
+    ],
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": {
+      "Leaking001/003 rect": [
+        2.0,
+        1.0
+      ],
+      "Leaking006 rect": [
+        0.4,
+        1.6
+      ],
+      "Leaking010C rect": [
+        0.4,
+        1.6
+      ]
+    },
+    "maps": {
+      "albedoAlpha": "wall-leak-streaks/albedo.png",
+      "normalGL": "wall-leak-streaks/normal.jpg",
+      "roughness": "wall-leak-streaks/roughness.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          0,
+          0,
+          1024,
+          512
+        ],
+        "uv": [
+          0.0,
+          0.5,
+          0.6667,
+          1.0
+        ],
+        "name": "Leaking001"
+      },
+      {
+        "px": [
+          0,
+          512,
+          1024,
+          512
+        ],
+        "uv": [
+          0.0,
+          0.0,
+          0.6667,
+          0.5
+        ],
+        "name": "Leaking003"
+      },
+      {
+        "px": [
+          1024,
+          0,
+          256,
+          1024
+        ],
+        "uv": [
+          0.6667,
+          0.0,
+          0.8333,
+          1.0
+        ],
+        "name": "Leaking006"
+      },
+      {
+        "px": [
+          1280,
+          0,
+          256,
+          1024
+        ],
+        "uv": [
+          0.8333,
+          0.0,
+          1.0,
+          1.0
+        ],
+        "name": "Leaking010C"
+      }
+    ],
+    "purpose": "Rain-wash / water-leak grime streaks under the roof edge and parapet; scupper/pipe drip stain.",
+    "suggestedPlacement": "Leaking001/003: along exterior walls directly under the parapet/roof edge and under canopy fascia, top edge aligned to the drip line, 1-1.5 m tall. Leaking006 (rusty-tan streak): under wall lamps, sign brackets, AC unit. Leaking010C (dark drip with pipe hole): under a scupper or overflow pipe on the side wall.",
+    "notes": "Atlas packed from 4 ambientCG decals (all CC0, 1K). Streak source images are 2:1 (top edge = source of the stain). Alpha from ambientCG Opacity map; roughness ~0.9 on stain. Leaking010C cropped to its central 256 px column (pipe hole at top)."
+  },
+  {
+    "slug": "asphalt-cracks-patches",
+    "source": "ambientCG",
+    "assetId": "AsphaltDamageSet001",
+    "url": "https://ambientcg.com/view?id=AsphaltDamageSet001",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      2.0,
+      2.0
+    ],
+    "maps": {
+      "albedoAlpha": "asphalt-cracks-patches/albedo.png",
+      "normalGL": "asphalt-cracks-patches/normal.jpg",
+      "roughness": "asphalt-cracks-patches/roughness.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          0,
+          0,
+          1024,
+          258
+        ],
+        "uv": [
+          0.0,
+          0.748,
+          1.0,
+          1.0
+        ],
+        "name": "piece0"
+      },
+      {
+        "px": [
+          686,
+          270,
+          338,
+          228
+        ],
+        "uv": [
+          0.6699,
+          0.5137,
+          1.0,
+          0.7363
+        ],
+        "name": "piece1"
+      },
+      {
+        "px": [
+          34,
+          290,
+          652,
+          208
+        ],
+        "uv": [
+          0.0332,
+          0.5137,
+          0.6699,
+          0.7168
+        ],
+        "name": "piece2"
+      },
+      {
+        "px": [
+          22,
+          518,
+          956,
+          224
+        ],
+        "uv": [
+          0.0215,
+          0.2754,
+          0.9551,
+          0.4941
+        ],
+        "name": "piece3"
+      },
+      {
+        "px": [
+          2,
+          766,
+          508,
+          258
+        ],
+        "uv": [
+          0.002,
+          0.0,
+          0.498,
+          0.252
+        ],
+        "name": "piece4"
+      },
+      {
+        "px": [
+          518,
+          770,
+          496,
+          248
+        ],
+        "uv": [
+          0.5059,
+          0.0059,
+          0.9902,
+          0.248
+        ],
+        "name": "piece5"
+      }
+    ],
+    "purpose": "Asphalt crack lines, raveled/broken edges and patch scars for the forecourt and road.",
+    "suggestedPlacement": "Forecourt asphalt between pump islands and toward the road edge; long pieces along slab joints and the canopy drip line; rotate/scale 0.7-1.5x to break repetition. Darken roughness under rain (cracks hold water).",
+    "notes": "Atlas of separate damage pieces; atlasRects auto-detected from the opacity map (pixel rect top-left origin; uv = [u0,v0,u1,v1] with v up). Real-world size is an estimate (API dimensions not set). No tar-snake sealant decals exist on ambientCG/Poly Haven: tint thin crack pieces near-black with low roughness (~0.25) to fake fresh crack sealant."
+  },
+  {
+    "slug": "asphalt-potholes",
+    "source": "ambientCG",
+    "assetId": "AsphaltDamageSet002",
+    "url": "https://ambientcg.com/view?id=AsphaltDamageSet002",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      2.0,
+      2.0
+    ],
+    "maps": {
+      "albedoAlpha": "asphalt-potholes/albedo.png",
+      "normalGL": "asphalt-potholes/normal.jpg",
+      "roughness": "asphalt-potholes/roughness.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          78,
+          54,
+          396,
+          388
+        ],
+        "uv": [
+          0.0762,
+          0.5684,
+          0.4629,
+          0.9473
+        ],
+        "name": "piece0"
+      },
+      {
+        "px": [
+          534,
+          0,
+          468,
+          466
+        ],
+        "uv": [
+          0.5215,
+          0.5449,
+          0.9785,
+          1.0
+        ],
+        "name": "piece1"
+      },
+      {
+        "px": [
+          78,
+          526,
+          412,
+          484
+        ],
+        "uv": [
+          0.0762,
+          0.0137,
+          0.4785,
+          0.4863
+        ],
+        "name": "piece2"
+      },
+      {
+        "px": [
+          590,
+          598,
+          364,
+          348
+        ],
+        "uv": [
+          0.5762,
+          0.0762,
+          0.9316,
+          0.416
+        ],
+        "name": "piece3"
+      }
+    ],
+    "purpose": "Pothole / broken-asphalt patches exposing gravel base.",
+    "suggestedPlacement": "Apron where the forecourt meets the rural road, entrance driveway, near the dumpster/oil drums. Use as a wet puddle mask too: inside the pothole set roughness ~0.05 and darken albedo when uWetness is high.",
+    "notes": "Atlas of 4 pieces; atlasRects auto-detected. Size estimated (each pothole ~0.6-0.9 m)."
+  },
+  {
+    "slug": "asphalt-patch-square",
+    "source": "ambientCG",
+    "assetId": "AsphaltDamage001",
+    "url": "https://ambientcg.com/view?id=AsphaltDamage001",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      1.2,
+      1.2
+    ],
+    "maps": {
+      "albedoAlpha": "asphalt-patch-square/albedo.png",
+      "normalGL": "asphalt-patch-square/normal.jpg",
+      "roughness": "asphalt-patch-square/roughness.jpg"
+    },
+    "purpose": "Rectangular cut-and-patched asphalt repair (utility trench patch).",
+    "suggestedPlacement": "One or two on the forecourt near the underground fuel tank fill caps or across the driveway; rotate 0-10 deg.",
+    "notes": "Near-square decal with soft opacity edge; size from ambientCG dimensions (120 x 120 cm)."
+  },
+  {
+    "slug": "road-line-white-worn",
+    "source": "ambientCG",
+    "assetId": [
+      "RoadLines003",
+      "RoadLines004"
+    ],
+    "url": [
+      "https://ambientcg.com/view?id=RoadLines003",
+      "https://ambientcg.com/view?id=RoadLines004"
+    ],
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": {
+      "perStrip": [
+        0.25,
+        1.0
+      ]
+    },
+    "maps": {
+      "albedoAlpha": "road-line-white-worn/albedo.png",
+      "normalGL": "road-line-white-worn/normal.jpg",
+      "roughness": "road-line-white-worn/roughness.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          0,
+          0,
+          256,
+          1024
+        ],
+        "uv": [
+          0.0,
+          0.0,
+          0.5,
+          1.0
+        ],
+        "name": "RoadLines003"
+      },
+      {
+        "px": [
+          256,
+          0,
+          256,
+          1024
+        ],
+        "uv": [
+          0.5,
+          0.0,
+          1.0,
+          1.0
+        ],
+        "name": "RoadLines004"
+      }
+    ],
+    "purpose": "Chipped/worn white painted line segments (continuous line pieces).",
+    "suggestedPlacement": "Parking stall lines in front of the store, road edge line on the rural road, stop bar at the forecourt exit. Strip is vertical in the texture: rotate so V runs along the line; chain several segments with random strip choice and slight width jitter (0.10-0.15 m line).",
+    "notes": "Two 256x1024 strips packed side by side. RoadLines004 is the more broken one. Size estimate: 1 m length per strip at 0.12 m line width when stretched horizontally (scale U to taste)."
+  },
+  {
+    "slug": "road-line-yellow-worn",
+    "source": "ambientCG",
+    "assetId": "RoadLines020C",
+    "url": "https://ambientcg.com/view?id=RoadLines020C",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      2.0,
+      2.0
+    ],
+    "maps": {
+      "albedoAlpha": "road-line-yellow-worn/albedo.png",
+      "normalGL": "road-line-yellow-worn/normal.jpg",
+      "roughness": "road-line-yellow-worn/roughness.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          0,
+          32,
+          1024,
+          64
+        ],
+        "uv": [
+          0.0,
+          0.9062,
+          1.0,
+          0.9688
+        ],
+        "name": "stripe0"
+      },
+      {
+        "px": [
+          0,
+          167,
+          1024,
+          18
+        ],
+        "uv": [
+          0.0,
+          0.8193,
+          1.0,
+          0.8369
+        ],
+        "name": "stripe1"
+      },
+      {
+        "px": [
+          0,
+          182,
+          1024,
+          42
+        ],
+        "uv": [
+          0.0,
+          0.7812,
+          1.0,
+          0.8223
+        ],
+        "name": "stripe2"
+      },
+      {
+        "px": [
+          0,
+          287,
+          1024,
+          65
+        ],
+        "uv": [
+          0.0,
+          0.6562,
+          1.0,
+          0.7197
+        ],
+        "name": "stripe3"
+      },
+      {
+        "px": [
+          0,
+          416,
+          1024,
+          65
+        ],
+        "uv": [
+          0.0,
+          0.5303,
+          1.0,
+          0.5938
+        ],
+        "name": "stripe4"
+      },
+      {
+        "px": [
+          0,
+          544,
+          1024,
+          65
+        ],
+        "uv": [
+          0.0,
+          0.4053,
+          1.0,
+          0.4688
+        ],
+        "name": "stripe5"
+      },
+      {
+        "px": [
+          0,
+          672,
+          1024,
+          64
+        ],
+        "uv": [
+          0.0,
+          0.2812,
+          1.0,
+          0.3438
+        ],
+        "name": "stripe6"
+      },
+      {
+        "px": [
+          0,
+          800,
+          1024,
+          65
+        ],
+        "uv": [
+          0.0,
+          0.1553,
+          1.0,
+          0.2188
+        ],
+        "name": "stripe7"
+      },
+      {
+        "px": [
+          0,
+          927,
+          1024,
+          66
+        ],
+        "uv": [
+          0.0,
+          0.0303,
+          1.0,
+          0.0947
+        ],
+        "name": "stripe8"
+      }
+    ],
+    "purpose": "Faded, chipped yellow paint stripes (hatch/no-parking/curb paint). Alpha is a ready-made worn-paint mask.",
+    "suggestedPlacement": "Yellow hatching beside the pump islands / no-parking zone in front of the propane cage; individual stripes cropped via UV for a faded yellow centre line on the road; curb and bollard bases.",
+    "notes": "Single image of parallel worn stripes (one per row). Use the alpha channel alone as a chipped-paint mask to wear down the existing procedural markings. Size estimated; atlasRects = one full-width band per stripe."
+  },
+  {
+    "slug": "grunge-masks",
+    "source": "ambientCG",
+    "assetId": [
+      "SurfaceImperfections008",
+      "SurfaceImperfections016",
+      "SurfaceImperfections010",
+      "SurfaceImperfections011",
+      "SurfaceImperfections009",
+      "Fingerprints001"
+    ],
+    "url": [
+      "https://ambientcg.com/view?id=SurfaceImperfections008",
+      "https://ambientcg.com/view?id=SurfaceImperfections016",
+      "https://ambientcg.com/view?id=SurfaceImperfections010",
+      "https://ambientcg.com/view?id=SurfaceImperfections011",
+      "https://ambientcg.com/view?id=SurfaceImperfections009",
+      "https://ambientcg.com/view?id=Fingerprints001"
+    ],
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": {
+      "tileMeters": 1.0
+    },
+    "maps": {
+      "cloudyDirt": "grunge-masks/cloudyDirt.jpg",
+      "fineGrime": "grunge-masks/fineGrime.jpg",
+      "verticalDrips": "grunge-masks/verticalDrips.jpg",
+      "streakyStains": "grunge-masks/streakyStains.jpg",
+      "splatterSpots": "grunge-masks/splatterSpots.jpg",
+      "blotches": "grunge-masks/blotches.jpg"
+    },
+    "purpose": "Tileable greyscale grime / wetness / edge-wear masks (white = effect).",
+    "suggestedPlacement": "cloudyDirt: large-scale grime & puddle mask for forecourt/floors (sample at 3-6 m tile, threshold with smoothstep for puddles). fineGrime: high-frequency dirt on walls/pumps/counter (0.5-1 m tile). verticalDrips: wall streaks under windows/roof (tile 1-2 m, U only). streakyStains: canopy pillars, cooler doors, metal panels. splatterSpots: mud splash at wall bases / paint chip mask for bollards & markings. blotches: puddle/oil blotch breakup, smudges on glass.",
+    "notes": "Taken from the Opacity map of each ambientCG imperfection material (seamlessly tileable, 1K). Combine channels in-shader (e.g. pack into RGBA at load) to replace / modulate the procedural uGrime & streak noise."
+  },
+  {
+    "slug": "oil-stain-smear",
+    "source": "ambientCG",
+    "assetId": "Smear001",
+    "url": "https://ambientcg.com/view?id=Smear001",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      0.9,
+      0.83
+    ],
+    "maps": {
+      "mask": "oil-stain-smear/mask.jpg",
+      "normalGL": "oil-stain-smear/normal.jpg",
+      "roughness": "oil-stain-smear/roughness.jpg"
+    },
+    "purpose": "Oil / fuel smear stain under pumps and parked vehicles (substitute: no dedicated oil-stain decal exists on ambientCG/Poly Haven).",
+    "suggestedPlacement": "Under each pump nozzle holster, beside pump islands, under the cargo van engine bay and in the parking stalls. Render as multiply decal: albedo *= mix(1, 0.35, mask), roughness = mix(base, 0.15, mask) for wet oil sheen; optional thin-film tint on spec.",
+    "notes": "Greyscale smear mask (black = none), 1024x941. Non-tileable decal; rotate/scale 0.5-1.5x. Pair with grunge-masks/blotches at low threshold for drip spots around it."
+  },
+  {
+    "slug": "muddy-footprints",
+    "source": "ambientCG",
+    "assetId": [
+      "Footsteps003",
+      "Footsteps004"
+    ],
+    "url": [
+      "https://ambientcg.com/view?id=Footsteps003",
+      "https://ambientcg.com/view?id=Footsteps004"
+    ],
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": {
+      "perStrip": [
+        0.6,
+        2.4
+      ]
+    },
+    "maps": {
+      "mask": "muddy-footprints/mask.png",
+      "normalGL": "muddy-footprints/normal.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          0,
+          0,
+          256,
+          1024
+        ],
+        "uv": [
+          0.0,
+          0.0,
+          0.5,
+          1.0
+        ],
+        "name": "Footsteps003"
+      },
+      {
+        "px": [
+          256,
+          0,
+          256,
+          1024
+        ],
+        "uv": [
+          0.5,
+          0.0,
+          1.0,
+          1.0
+        ],
+        "name": "Footsteps004"
+      }
+    ],
+    "purpose": "Footprint trail masks for muddy / wet tracked-in footprints on the shop floor (and forecourt).",
+    "suggestedPlacement": "Shop VCT floor from the entrance mat toward the counter and toward the back/stockroom door (the clerk / the figure). Tint mud brown-grey (albedo *= mix(1, vec3(0.45,0.38,0.3), mask*0.7)), roughness toward 0.3 where fresh/wet. Fade alpha with distance from the door.",
+    "notes": "Derived mask (white = print) from ambientCG Footsteps color maps (prints in snow); normal is the snow-impression normal: scale normal strength down to ~0.2 on a hard floor. Strips are vertical (walking direction = V)."
+  },
+  {
+    "slug": "rain-glass-droplets",
+    "source": "ambientCG",
+    "assetId": "Leaking013C",
+    "url": "https://ambientcg.com/view?id=Leaking013C",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": {
+      "tileMeters": 0.5
+    },
+    "maps": {
+      "normalGL": "rain-glass-droplets/normal.jpg",
+      "roughness": "rain-glass-droplets/roughness.jpg",
+      "dropletMask": "rain-glass-droplets/droplet_mask.jpg"
+    },
+    "purpose": "Tileable static raindrops on glass / lens (normal + roughness + mask).",
+    "suggestedPlacement": "Store front windows and door glass (exterior side), van windscreen, cooler glass condensation (scaled up), and the bodycam lens overlay (sample normal in screen space at ~0.3 screen tile to refract the post-process UV, mask to add slight blur/highlight).",
+    "notes": "From ambientCG Leaking013C (water droplets, dense variant). Normal is subtle; boost strength 2-4x for glass. dropletMask is inverted+autocontrasted roughness (white = droplet). Tileable."
+  },
+  {
+    "slug": "rain-glass-rivulets",
+    "source": "ambientCG",
+    "assetId": "Leaking012C",
+    "url": "https://ambientcg.com/view?id=Leaking012C",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": {
+      "tileMeters": 0.6
+    },
+    "maps": {
+      "normalGL": "rain-glass-rivulets/normal.jpg",
+      "roughness": "rain-glass-rivulets/roughness.jpg",
+      "rivuletMask": "rain-glass-rivulets/rivulet_mask.jpg"
+    },
+    "purpose": "Tileable running-water rivulets with drops (vertical streams) for rain sheeting down glass.",
+    "suggestedPlacement": "Exterior store windows under the canopy edge / door glass; scroll V slowly downward and blend with rain-glass-droplets. Also a wet-wall streak overlay on painted metal (pumps, ICE merchandiser).",
+    "notes": "From ambientCG Leaking012C. Streams run top-to-bottom in V. Tileable."
+  },
+  {
+    "slug": "litter-dry-leaves",
+    "source": "ambientCG",
+    "assetId": "LeafSet012",
+    "url": "https://ambientcg.com/view?id=LeafSet012",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      1.0,
+      1.0
+    ],
+    "maps": {
+      "albedoAlpha": "litter-dry-leaves/albedo.png",
+      "normalGL": "litter-dry-leaves/normal.jpg",
+      "roughness": "litter-dry-leaves/roughness.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          86,
+          38,
+          356,
+          180
+        ],
+        "uv": [
+          0.084,
+          0.7871,
+          0.4316,
+          0.9629
+        ],
+        "name": "piece0"
+      },
+      {
+        "px": [
+          598,
+          38,
+          348,
+          180
+        ],
+        "uv": [
+          0.584,
+          0.7871,
+          0.9238,
+          0.9629
+        ],
+        "name": "piece1"
+      },
+      {
+        "px": [
+          78,
+          278,
+          356,
+          204
+        ],
+        "uv": [
+          0.0762,
+          0.5293,
+          0.4238,
+          0.7285
+        ],
+        "name": "piece2"
+      },
+      {
+        "px": [
+          574,
+          278,
+          364,
+          212
+        ],
+        "uv": [
+          0.5605,
+          0.5215,
+          0.916,
+          0.7285
+        ],
+        "name": "piece3"
+      },
+      {
+        "px": [
+          38,
+          542,
+          436,
+          220
+        ],
+        "uv": [
+          0.0371,
+          0.2559,
+          0.4629,
+          0.4707
+        ],
+        "name": "piece4"
+      },
+      {
+        "px": [
+          550,
+          534,
+          436,
+          228
+        ],
+        "uv": [
+          0.5371,
+          0.2559,
+          0.9629,
+          0.4785
+        ],
+        "name": "piece5"
+      },
+      {
+        "px": [
+          70,
+          790,
+          356,
+          196
+        ],
+        "uv": [
+          0.0684,
+          0.0371,
+          0.416,
+          0.2285
+        ],
+        "name": "piece6"
+      },
+      {
+        "px": [
+          590,
+          806,
+          364,
+          204
+        ],
+        "uv": [
+          0.5762,
+          0.0137,
+          0.9316,
+          0.2129
+        ],
+        "name": "piece7"
+      }
+    ],
+    "purpose": "Dry brown oak leaf decals (litter).",
+    "suggestedPlacement": "Scattered against the store wall base, around oil-drum bins, in the corners of the canopy, in pothole puddles and blown just inside the entrance; mostly in wind shadows. 0.08-0.14 m per leaf.",
+    "notes": "Atlas of 8 leaves; atlasRects auto-detected. Size: whole sheet ~1 m (estimate)."
+  },
+  {
+    "slug": "litter-paper-scraps",
+    "source": "ambientCG",
+    "assetId": "CardboardSet001",
+    "url": "https://ambientcg.com/view?id=CardboardSet001",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      1.5,
+      1.5
+    ],
+    "maps": {
+      "albedoAlpha": "litter-paper-scraps/albedo.png",
+      "normalGL": "litter-paper-scraps/normal.jpg",
+      "roughness": "litter-paper-scraps/roughness.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          34,
+          2,
+          208,
+          252
+        ],
+        "uv": [
+          0.0332,
+          0.752,
+          0.2363,
+          0.998
+        ],
+        "name": "piece0"
+      },
+      {
+        "px": [
+          290,
+          2,
+          196,
+          256
+        ],
+        "uv": [
+          0.2832,
+          0.748,
+          0.4746,
+          0.998
+        ],
+        "name": "piece1"
+      },
+      {
+        "px": [
+          554,
+          2,
+          172,
+          248
+        ],
+        "uv": [
+          0.541,
+          0.7559,
+          0.709,
+          0.998
+        ],
+        "name": "piece2"
+      },
+      {
+        "px": [
+          774,
+          0,
+          236,
+          258
+        ],
+        "uv": [
+          0.7559,
+          0.748,
+          0.9863,
+          1.0
+        ],
+        "name": "piece3"
+      },
+      {
+        "px": [
+          14,
+          274,
+          232,
+          228
+        ],
+        "uv": [
+          0.0137,
+          0.5098,
+          0.2402,
+          0.7324
+        ],
+        "name": "piece4"
+      },
+      {
+        "px": [
+          254,
+          282,
+          256,
+          204
+        ],
+        "uv": [
+          0.248,
+          0.5254,
+          0.498,
+          0.7246
+        ],
+        "name": "piece5"
+      },
+      {
+        "px": [
+          550,
+          282,
+          188,
+          208
+        ],
+        "uv": [
+          0.5371,
+          0.5215,
+          0.7207,
+          0.7246
+        ],
+        "name": "piece6"
+      },
+      {
+        "px": [
+          798,
+          330,
+          192,
+          128
+        ],
+        "uv": [
+          0.7793,
+          0.5527,
+          0.9668,
+          0.6777
+        ],
+        "name": "piece7"
+      },
+      {
+        "px": [
+          10,
+          514,
+          232,
+          248
+        ],
+        "uv": [
+          0.0098,
+          0.2559,
+          0.2363,
+          0.498
+        ],
+        "name": "piece8"
+      },
+      {
+        "px": [
+          266,
+          534,
+          236,
+          224
+        ],
+        "uv": [
+          0.2598,
+          0.2598,
+          0.4902,
+          0.4785
+        ],
+        "name": "piece9"
+      },
+      {
+        "px": [
+          514,
+          538,
+          248,
+          216
+        ],
+        "uv": [
+          0.502,
+          0.2637,
+          0.7441,
+          0.4746
+        ],
+        "name": "piece10"
+      },
+      {
+        "px": [
+          766,
+          550,
+          258,
+          212
+        ],
+        "uv": [
+          0.748,
+          0.2559,
+          1.0,
+          0.4629
+        ],
+        "name": "piece11"
+      },
+      {
+        "px": [
+          302,
+          786,
+          168,
+          224
+        ],
+        "uv": [
+          0.2949,
+          0.0137,
+          0.459,
+          0.2324
+        ],
+        "name": "piece12"
+      },
+      {
+        "px": [
+          522,
+          774,
+          236,
+          248
+        ],
+        "uv": [
+          0.5098,
+          0.002,
+          0.7402,
+          0.2441
+        ],
+        "name": "piece13"
+      },
+      {
+        "px": [
+          818,
+          766,
+          176,
+          258
+        ],
+        "uv": [
+          0.7988,
+          0.0,
+          0.9707,
+          0.252
+        ],
+        "name": "piece14"
+      },
+      {
+        "px": [
+          90,
+          814,
+          80,
+          148
+        ],
+        "uv": [
+          0.0879,
+          0.0605,
+          0.166,
+          0.2051
+        ],
+        "name": "piece15"
+      }
+    ],
+    "purpose": "Torn cardboard / paper scraps (litter).",
+    "suggestedPlacement": "Near the dumpster/back door, under the bench, trapped against the propane cage and fence line, a few soggy scraps on the forecourt (darken + lower roughness when wet).",
+    "notes": "Atlas of ~15 torn pieces; atlasRects auto-detected; size from ambientCG dimensions (150 x 150 cm)."
+  },
+  {
+    "slug": "chewing-gum-spots",
+    "source": "ambientCG",
+    "assetId": "ChewingGum001",
+    "url": "https://ambientcg.com/view?id=ChewingGum001",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      1.0,
+      1.0
+    ],
+    "maps": {
+      "albedoAlpha": "chewing-gum-spots/albedo.png",
+      "normalGL": "chewing-gum-spots/normal.jpg",
+      "roughness": "chewing-gum-spots/roughness.jpg"
+    },
+    "purpose": "Flattened chewing-gum / grime spots, scattered tileable decal.",
+    "suggestedPlacement": "Concrete apron in front of the entrance, under the payphone and bench, and lightly on the shop floor at the counter. Darken albedo to grey-black for old gum; low intensity.",
+    "notes": "Tileable scatter sheet (1 m estimate); not an atlas."
+  },
+  {
+    "slug": "graffiti-tags",
+    "source": "ambientCG",
+    "assetId": "GraffitiSet001",
+    "url": "https://ambientcg.com/view?id=GraffitiSet001",
+    "license": "CC0",
+    "author": "ambientCG (Lennart Demes)",
+    "realWorldSizeMeters": [
+      1.2,
+      1.2
+    ],
+    "maps": {
+      "albedoAlpha": "graffiti-tags/albedo.png",
+      "normalGL": "graffiti-tags/normal.jpg",
+      "roughness": "graffiti-tags/roughness.jpg"
+    },
+    "atlasRects": [
+      {
+        "px": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "uv": [
+          0.0,
+          0.75,
+          0.25,
+          1.0
+        ],
+        "name": "r0c0"
+      },
+      {
+        "px": [
+          256,
+          0,
+          256,
+          256
+        ],
+        "uv": [
+          0.25,
+          0.75,
+          0.5,
+          1.0
+        ],
+        "name": "r0c1"
+      },
+      {
+        "px": [
+          512,
+          0,
+          256,
+          256
+        ],
+        "uv": [
+          0.5,
+          0.75,
+          0.75,
+          1.0
+        ],
+        "name": "r0c2"
+      },
+      {
+        "px": [
+          768,
+          0,
+          256,
+          256
+        ],
+        "uv": [
+          0.75,
+          0.75,
+          1.0,
+          1.0
+        ],
+        "name": "r0c3"
+      },
+      {
+        "px": [
+          0,
+          256,
+          256,
+          256
+        ],
+        "uv": [
+          0.0,
+          0.5,
+          0.25,
+          0.75
+        ],
+        "name": "r1c0"
+      },
+      {
+        "px": [
+          256,
+          256,
+          256,
+          256
+        ],
+        "uv": [
+          0.25,
+          0.5,
+          0.5,
+          0.75
+        ],
+        "name": "r1c1"
+      },
+      {
+        "px": [
+          512,
+          256,
+          256,
+          256
+        ],
+        "uv": [
+          0.5,
+          0.5,
+          0.75,
+          0.75
+        ],
+        "name": "r1c2"
+      },
+      {
+        "px": [
+          768,
+          256,
+          256,
+          256
+        ],
+        "uv": [
+          0.75,
+          0.5,
+          1.0,
+          0.75
+        ],
+        "name": "r1c3"
+      },
+      {
+        "px": [
+          0,
+          512,
+          256,
+          256
+        ],
+        "uv": [
+          0.0,
+          0.25,
+          0.25,
+          0.5
+        ],
+        "name": "r2c0"
+      },
+      {
+        "px": [
+          256,
+          512,
+          256,
+          256
+        ],
+        "uv": [
+          0.25,
+          0.25,
+          0.5,
+          0.5
+        ],
+        "name": "r2c1"
+      },
+      {
+        "px": [
+          512,
+          512,
+          256,
+          256
+        ],
+        "uv": [
+          0.5,
+          0.25,
+          0.75,
+          0.5
+        ],
+        "name": "r2c2"
+      },
+      {
+        "px": [
+          768,
+          512,
+          256,
+          256
+        ],
+        "uv": [
+          0.75,
+          0.25,
+          1.0,
+          0.5
+        ],
+        "name": "r2c3"
+      },
+      {
+        "px": [
+          0,
+          768,
+          256,
+          256
+        ],
+        "uv": [
+          0.0,
+          0.0,
+          0.25,
+          0.25
+        ],
+        "name": "r3c0"
+      },
+      {
+        "px": [
+          256,
+          768,
+          256,
+          256
+        ],
+        "uv": [
+          0.25,
+          0.0,
+          0.5,
+          0.25
+        ],
+        "name": "r3c1"
+      },
+      {
+        "px": [
+          512,
+          768,
+          256,
+          256
+        ],
+        "uv": [
+          0.5,
+          0.0,
+          0.75,
+          0.25
+        ],
+        "name": "r3c2"
+      },
+      {
+        "px": [
+          768,
+          768,
+          256,
+          256
+        ],
+        "uv": [
+          0.75,
+          0.0,
+          1.0,
+          0.25
+        ],
+        "name": "r3c3"
+      }
+    ],
+    "purpose": "Marker / spray graffiti tags (optional).",
+    "suggestedPlacement": "Use sparingly and at 30-60% opacity, desaturated: restroom wall/mirror frame, the payphone housing, side of the oil-drum bins, back wall by the dumpster. Each tag ~0.3 x 0.2 m.",
+    "notes": "Atlas of 16 tags on a 4x4 grid (atlasRects = fixed 256 px cells; some tags may slightly overlap cell borders). Size from ambientCG dimensions (120 x 120 cm)."
+  }
+]
