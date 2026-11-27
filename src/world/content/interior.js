@@ -159,7 +159,7 @@ export function buildInterior(ctx) {
     const dead = deadSection.includes(i);
     b.box(dead ? 'plasticWhite' : 'emCooler', [CX1 - 0.02, CH / 2, z0 + 0.03], [0.012, CH - 0.5, 0.02], { mode: dead ? 'vtx' : 'none', subdiv: 2 });
     if (i % 2 === 0 && !dead) {
-      ctx.light({ kind: 'tube', a: [CX1 - 0.06, 0.35, z1], b: [CX1 - 0.06, CH - 0.15, z1], color: 0xe2ecff, intensity: 3.2, lambert: 0, range: 9, soft: 0.25, glow: { power: 0.35, exterior: false, down: 0, color: 0xe2ecff } });
+      ctx.light({ kind: 'tube', a: [CX1 - 0.06, 0.35, z1], b: [CX1 - 0.06, CH - 0.15, z1], color: 0xe2ecff, intensity: 2.3, lambert: 0, range: 9, soft: 0.25, glow: { power: 0.35, exterior: false, down: 0, color: 0xe2ecff } });
     }
   }
   b.box('frame', [CX1 + 0.02, CH / 2, CZ1], [0.05, CH, 0.05], { mode: 'vtx', subdiv: 3 });
@@ -229,7 +229,7 @@ export function buildInterior(ctx) {
     b.cylinder('metalRed', [px, y, 4.55], 0.25, 0.2, { segments: 20, radiusTop: 0.06, caps: [false, true], subdiv: 2 });
     b.cylinder('emPendant', [px, y + 0.03, 4.55], 0.07, 0.005, { segments: 16, mode: 'none', caps: [true, false] });
     b.cylinder('plasticBlack', [px, y + 0.005, 4.55], 0.235, 0.004, { segments: 20, mode: 'vtx', caps: [true, false], subdiv: 1 });
-    ctx.light({ kind: 'point', pos: [px, y - 0.04, 4.55], radius: 0.08, color: 0xffa860, intensity: 4.5, axis: [0, -1, 0], lambert: 0.5, cone: [-0.05, 0.35], range: 11, soft: 0.2, glow: { power: 0.6, exterior: false, down: 0.9, color: 0xffb070 } });
+    ctx.light({ kind: 'point', pos: [px, y - 0.04, 4.55], radius: 0.08, color: 0xffa860, intensity: 3.0, axis: [0, -1, 0], lambert: 0.5, cone: [-0.05, 0.35], range: 11, soft: 0.2, glow: { power: 0.6, exterior: false, down: 0.9, color: 0xffb070 } });
   }
 
   // ================================================================== CEILING FIXTURES (troffers)
@@ -373,7 +373,7 @@ export function buildInterior(ctx) {
   // bare bulb (stockroom)
   b.cylinder('plasticBlack', [-3.4, 2.75, 10.4], 0.005, 0.25, { segments: 4, subdiv: 1 });
   b.cylinder('emBulbDim', [-3.4, 2.68, 10.4], 0.035, 0.08, { segments: 10, mode: 'none' });
-  ctx.light({ kind: 'point', pos: [-3.4, 2.66, 10.4], radius: 0.04, color: 0xffa050, intensity: 1.6, range: 10, soft: 0.1, glow: { power: 0.25, exterior: false, down: 0.3, color: 0xffa050 } });
+  ctx.light({ kind: 'point', pos: [-3.4, 2.66, 10.4], radius: 0.04, color: 0xffc890, intensity: 1.2, range: 10, soft: 0.1, glow: { power: 0.25, exterior: false, down: 0.3, color: 0xffa050 } });
   // fill from the bulb bounce
   ctx.light({ kind: 'point', pos: [-3.4, 0.5, 10.4], color: 0x8a7a68, intensity: 0.35, axis: [0, 1, 0], lambert: 1, cone: [-0.1, 0.2], range: 8, radius: 0.5, soft: 1 });
 

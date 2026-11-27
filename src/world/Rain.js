@@ -55,7 +55,7 @@ export class Rain {
       uBox: { value: new THREE.Vector3(26, 16, 26) },
       uWind: { value: new THREE.Vector2(0.9, -0.5) },
       uSpeed: { value: 8.5 },
-      uLen: { value: 0.42 },
+      uLen: { value: 0.34 },
       uWidth: { value: 0.0022 },
       uRes: { value: new THREE.Vector2(1280, 720) },
       uIntensity: { value: 1.0 },
@@ -67,9 +67,9 @@ export class Rain {
       uFlashCol: { value: new THREE.Vector3() },
       uFlashCone: { value: new THREE.Vector2(0.8, 0.9) },
       uLightning: G.uLightning,
-      uAmbient: { value: new THREE.Vector3(0.006, 0.0066, 0.008) },
+      uAmbient: { value: new THREE.Vector3(0.016, 0.017, 0.021) },
     };
-    const count = { test: 3000, low: 5000, medium: 8000, high: 11000, ultra: 15000 }[quality.name] ?? 9000;
+    const count = { test: 7000, low: 6000, medium: 9000, high: 12000, ultra: 16000 }[quality.name] ?? 9000;
     // ---------------------------------------------------------------- streaks
     const quad = new THREE.InstancedBufferGeometry();
     quad.setAttribute('position', new THREE.Float32BufferAttribute([-1, 0, 0, 1, 0, 0, 1, 1, 0, -1, 1, 0], 3));
@@ -111,7 +111,7 @@ export class Rain {
           vec3 viewDir = normalize(p0 - uCamPos);
           vCol = dropLight(p0, viewDir);
           float dist = length(p0 - uCamPos);
-          vA = (wpx / wdraw) * smoothstep(0.3, 1.2, dist) * smoothstep(uBox.x * 0.5, uBox.x * 0.3, dist) * 2.2;
+          vA = (wpx / wdraw) * smoothstep(0.3, 1.2, dist) * smoothstep(uBox.x * 0.5, uBox.x * 0.25, dist) * 1.5;
         }`,
       fragmentShader: /* glsl */ `
         varying vec2 vQ; varying vec3 vCol; varying float vA;
@@ -119,7 +119,7 @@ export class Rain {
           float a = (1.0 - vQ.x * vQ.x) * smoothstep(0.0, 0.25, vQ.y) * smoothstep(1.0, 0.6, vQ.y);
           gl_FragColor = vec4(vCol * a * vA, 1.0);
         }`,
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     });
     this.streaks = new THREE.Mesh(quad, streakMat);
     this.streaks.frustumCulled = false;
@@ -168,7 +168,7 @@ export class Rain {
           float a = (ring * 0.8 + core) * (1.0 - vT);
           gl_FragColor = vec4(vCol * a * 0.9, 1.0);
         }`,
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     });
     this.splashes = new THREE.Mesh(sgeo, splashMat);
     this.splashes.frustumCulled = false;
@@ -237,7 +237,7 @@ export class Rain {
           float a = (1.0 - vQ.x * vQ.x) * smoothstep(0.0, 0.2, vQ.y) * smoothstep(1.0, 0.5, vQ.y);
           gl_FragColor = vec4(vCol * a * vA, 1.0);
         }`,
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     });
     this.drips = new THREE.Mesh(dgeo, dripMat);
     this.drips.frustumCulled = false;

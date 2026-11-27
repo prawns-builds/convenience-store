@@ -67,9 +67,9 @@ export class Game {
       const inStore = pos.x > -10 && pos.x < 0.05 && pos.z > -7 && pos.z < 15 && pos.y < 4.4;
       if (inStore || L.group === GROUP.BREAKER || L.group === GROUP.FLICKER_INT) continue;
       if (L.intensity < 4) continue;
-      rl.push({ pos, color: L.color, exteriorRain: true, rainRange: L.range > 25 ? 18 : 9, rainPower: L.intensity * (L.range > 25 ? 0.035 : 0.06) });
+      rl.push({ pos, color: L.color, exteriorRain: true, rainRange: L.range > 25 ? 26 : 14, rainPower: L.intensity * (L.range > 25 ? 0.05 : 0.09) });
     }
-    for (let k = -3; k <= 3; k++) rl.push({ pos: new THREE.Vector3(25.2, 8.4, 8 + k * 32), color: new THREE.Color(0xffa65a), exteriorRain: true, rainRange: 18, rainPower: 3.5 });
+    for (let k = -3; k <= 3; k++) rl.push({ pos: new THREE.Vector3(25.2, 8.4, 8 + k * 32), color: new THREE.Color(0xffa65a), exteriorRain: true, rainRange: 26, rainPower: 5.5 });
     this.rain.setLights(rl);
     this.cctv = new CCTV(this, this.world.ctx.cctvScreens ?? []);
     this.events = new Events(this);

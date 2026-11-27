@@ -107,6 +107,7 @@ uniform sampler2D tNoise;
 uniform int uGlowCount;
 uniform vec4 uGlowPos[MAX_GLOWS];   // xyz, w = 1 exterior / 0 interior
 uniform vec4 uGlowCol[MAX_GLOWS];   // rgb power, w = downward bias
+uniform float uGlowGain;
 varying vec2 vUv;
 
 vec2 boxIntersect(vec3 ro, vec3 rd, vec3 bmin, vec3 bmax) {
@@ -199,7 +200,10 @@ void main() {
     float dens = ext ? fogDensityAt(cp) : uDustDensity;
     float down = mix(1.0, smoothstep(-0.6, 0.6, (lp.y - cp.y) / max(length(cp - lp), 0.1)) * 1.6 + 0.15, uGlowCol[i].w);
     float trans = exp(-dens * clamp(b, 0.0, tMax) * 0.7);
-    acc += uGlowCol[i].rgb * total * dens * down * trans * 0.08;
+    // forward-scattering lobe: halos concentrate around lamps when looking toward them
+    float toward = max(dot(rd, normalize(lp - uCamPos)), 0.0);
+    float lobe = 0.2 + 1.4 * pow(toward, 32.0) + 0.35 * pow(toward, 4.0);
+    acc += uGlowCol[i].rgb * total * dens * down * trans * 0.08 * uGlowGain * lobe;
   }
   gl_FragColor = vec4(acc, 1.0);
 }

@@ -190,6 +190,33 @@ void main() {
 
 function hash(n) { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
 
+// Merge geometries keeping only the listed attributes (indexed, 32-bit indices).
+function mergeAttributes(geos, names) {
+  let vcount = 0, icount = 0;
+  for (const g of geos) { vcount += g.attributes.position.count; icount += g.index ? g.index.count : g.attributes.position.count; }
+  const out = new THREE.BufferGeometry();
+  const arrays = {};
+  for (const n of names) {
+    const size = geos.find((g) => g.attributes[n])?.attributes[n].itemSize ?? 3;
+    arrays[n] = { a: new Float32Array(vcount * size), size };
+  }
+  const idx = new Uint32Array(icount);
+  let vo = 0, io = 0;
+  for (const g of geos) {
+    const n = g.attributes.position.count;
+    for (const name of names) {
+      const src = g.attributes[name];
+      if (src) arrays[name].a.set(src.array.subarray(0, n * src.itemSize), vo * arrays[name].size);
+    }
+    if (g.index) { const ix = g.index.array; for (let i = 0; i < ix.length; i++) idx[io++] = ix[i] + vo; }
+    else for (let i = 0; i < n; i++) idx[io++] = i + vo;
+    vo += n;
+  }
+  for (const n of names) out.setAttribute(n, new THREE.BufferAttribute(arrays[n].a, arrays[n].size));
+  out.setIndex(new THREE.BufferAttribute(idx, 1));
+  return out;
+}
+
 export class LightBaker {
   constructor(renderer, opts) {
     this.renderer = renderer;
@@ -270,12 +297,14 @@ export class LightBaker {
     this.groundAcc = acc(ground.width, ground.height, 3);
     this.groundFin = [fin(ground.width, ground.height), fin(ground.width, ground.height)];
 
-    // --- bake scenes
+    // --- bake scenes (all lightmapped geometry merged into a single draw)
     this.atlasScene = new THREE.Scene();
-    for (const m of lmMeshes) {
-      const mesh = new THREE.Mesh(m.geometry, this.bakeMat);
+    {
+      const merged = mergeAttributes(lmMeshes.map((m) => m.geometry), ['position', 'normal', 'uv1']);
+      const mesh = new THREE.Mesh(merged, this.bakeMat);
       mesh.frustumCulled = false;
       this.atlasScene.add(mesh);
+      this._atlasGeo = merged;
     }
     this.groundScene = new THREE.Scene();
     {
@@ -315,10 +344,22 @@ export class LightBaker {
     }
     this.pointBases = bases;
 
-    // --- caster scene (distance materials)
+    // --- caster scene (distance materials). Static non-instanced casters are merged into
+    // one position-only mesh so every cube face is a handful of draw calls.
     this.casterScene = new THREE.Scene();
     const plainDist = this.distanceMaterial();
+    const plain = casters.filter((c) => !c.instanced && !c.alphaMap && !c.matrix);
+    if (plain.length) {
+      const merged = mergeAttributes(plain.map((c) => c.geometry), ['position']);
+      merged.computeBoundingSphere();
+      const mesh = new THREE.Mesh(merged, plainDist);
+      mesh.frustumCulled = false;
+      mesh.matrixAutoUpdate = false;
+      this.casterScene.add(mesh);
+      this._casterGeo = merged;
+    }
     for (const c of casters) {
+      if (plain.includes(c)) continue;
       let obj;
       if (c.instanced) {
         obj = new THREE.InstancedMesh(c.geometry, c.alphaMap ? this.distanceMaterial(c.alphaMap) : plainDist, c.instanced.count);
@@ -533,6 +574,8 @@ export class LightBaker {
   }
 
   disposeAccumulators() {
+    this._atlasGeo?.dispose();
+    this._casterGeo?.dispose();
     this.cubeRT.dispose();
     this.skyRT.dispose();
     this.atlasAcc.dispose();

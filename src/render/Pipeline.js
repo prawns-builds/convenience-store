@@ -22,12 +22,12 @@ export class Pipeline {
       fogDensity: 0.0085, fogHeight: 9, dustDensity: 0.003,
       fogColor: new THREE.Color(0.0021, 0.0023, 0.0029), fogColorHigh: new THREE.Color(0.0012, 0.0013, 0.0018),
       bloomStrength: 0.11, bloomRadius: 1.0,
-      distortion: 0.24, ca: 0.035, vignette: 0.6, grain: 0.032,
+      distortion: 0.3, ca: 0.035, vignette: 0.6, grain: 0.032,
       exposureBias: 1.0, saturation: 0.82,
       lift: new THREE.Vector3(0.004, 0.0045, 0.006), gain: new THREE.Vector3(1.0, 1.0, 1.0),
       motionBlur: 0.55,
       key: 0.036, minExp: 0.45, maxExp: 3.4,
-      flash: 0, glitch: 0, fade: 0, lightning: 0,
+      flash: 0, glitch: 0, fade: 0, lightning: 0, glowGain: 3.4,
     };
     this.glows = [];
     this.flashlight = null;
@@ -53,7 +53,7 @@ export class Pipeline {
         uFlashOn: { value: 0 }, uFlashPos: { value: new THREE.Vector3() }, uFlashDir: { value: new THREE.Vector3(0, 0, -1) },
         uFlashColor: { value: new THREE.Vector3() }, uFlashCone: { value: new THREE.Vector2(0.8, 0.95) },
         tFlashShadow: { value: null }, uFlashShadowMatrix: { value: new THREE.Matrix4() }, tNoise: { value: null },
-        uGlowCount: { value: 0 },
+        uGlowCount: { value: 0 }, uGlowGain: { value: 5 },
         uGlowPos: { value: Array.from({ length: 32 }, () => new THREE.Vector4()) },
         uGlowCol: { value: Array.from({ length: 32 }, () => new THREE.Vector4()) },
       },
@@ -240,6 +240,7 @@ export class Pipeline {
       V.tFlashShadow.value = fl.light.shadow.map.depthTexture;
       V.uFlashShadowMatrix.value.copy(fl.light.shadow.matrix);
     } else V.uFlashOn.value = 0;
+    V.uGlowGain.value = P.glowGain ?? 5;
     const n = Math.min(32, this.glows.length);
     V.uGlowCount.value = n;
     for (let i = 0; i < n; i++) {

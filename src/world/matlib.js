@@ -40,7 +40,7 @@ export const MATS = {
   counterTop: { tex: 'plaster', color: 0x8a8576, roughness: 0.35 },
   plaster: { tex: 'plaster', color: 0xb9b49a, grime: 0.22 },
   plasterGreen: { tex: 'plaster', color: 0x6b8677, grime: 0.2 },
-  plasterBack: { tex: 'plaster', color: 0x8e8a7c, grime: 0.35 },
+  plasterBack: { tex: 'plaster', color: 0x87877f, grime: 0.35 },
   ceilingTile: { tex: 'ceiling', color: 0xffffff },
   wallTile: { tex: 'vct', color: 0xe8e8e0, roughness: 0.25, uvMul: 2.0 },
   cardboard: { color: 0x8a6a45, roughness: 0.85 },

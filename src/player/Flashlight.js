@@ -16,7 +16,7 @@ function makeCookie() {
     const r = Math.hypot(u, v);
     const a = Math.atan2(v, u);
     // hot core + soft ring + wide spill, faint lens streaks
-    let I = 1.25 * Math.exp(-r * r * 22) + 0.55 * Math.exp(-Math.pow((r - 0.32) / 0.12, 2)) + 0.38 * Math.exp(-r * r * 2.6);
+    let I = 0.85 * Math.exp(-r * r * 18) + 0.45 * Math.exp(-Math.pow((r - 0.32) / 0.13, 2)) + 0.42 * Math.exp(-r * r * 2.4);
     I *= 1 + 0.06 * Math.sin(a * 7 + r * 9) * Math.exp(-r * 3) + 0.04 * Math.sin(a * 13.0 - r * 30.0);
     I *= THREE.MathUtils.smoothstep(1.0, 0.82, r);
     const k = (j * s + i) * 4;
@@ -41,7 +41,7 @@ export class Flashlight {
     this.battery = 0.47;
     this.raised = 1;
     this.raiseT = 1;
-    this.intensity = 20;
+    this.intensity = 14;
     this.volumetricScale = 0.05;
     const L = new THREE.SpotLight(0xeef3ff, 0, 34, THREE.MathUtils.degToRad(33), 0.62, 2);
     L.castShadow = true;
