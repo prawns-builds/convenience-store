@@ -32,6 +32,24 @@ function makeCookie() {
   return tex;
 }
 
+// The spot light is created by the World before probe capture + shader precompile so that
+// every material compiles once with the final light configuration.
+export function createFlashlightLight(scene, q) {
+  const L = new THREE.SpotLight(0xeef3ff, 0, 34, THREE.MathUtils.degToRad(33), 0.62, 2);
+  L.castShadow = true;
+  L.shadow.mapSize.set(q.flashShadow, q.flashShadow);
+  L.shadow.camera.near = 0.06;
+  L.shadow.camera.far = 34;
+  L.shadow.bias = -0.0004;
+  L.shadow.normalBias = 0.025;
+  L.shadow.radius = 3;
+  L.map = makeCookie();
+  L.position.set(0, -50, 0);
+  L.target.position.set(0, -60, 0);
+  scene.add(L, L.target);
+  return L;
+}
+
 export class Flashlight {
   constructor(scene, camera, world, q) {
     this.camera = camera;
@@ -43,16 +61,7 @@ export class Flashlight {
     this.raiseT = 1;
     this.intensity = 14;
     this.volumetricScale = 0.05;
-    const L = new THREE.SpotLight(0xeef3ff, 0, 34, THREE.MathUtils.degToRad(33), 0.62, 2);
-    L.castShadow = true;
-    L.shadow.mapSize.set(q.flashShadow, q.flashShadow);
-    L.shadow.camera.near = 0.06;
-    L.shadow.camera.far = 34;
-    L.shadow.bias = -0.0004;
-    L.shadow.normalBias = 0.025;
-    L.shadow.radius = 3;
-    L.map = makeCookie();
-    scene.add(L, L.target);
+    const L = world.flashLight ?? createFlashlightLight(scene, q);
     this.light = L;
 
     // ------------------------------------------------------------ phone model

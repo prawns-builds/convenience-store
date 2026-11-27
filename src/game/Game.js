@@ -269,6 +269,6 @@ export class Game {
 
   debugInfo() {
     const r = this.renderer.info;
-    return { calls: r.render.calls, tris: r.render.triangles, geos: r.memory.geometries, tex: r.memory.textures, bake: this.world.baker.progress, scale: this.world.baker.scale, atlas: this.world.packInfo };
+    return { programs: r.programs?.length, calls: r.render.calls, tris: r.render.triangles, geos: r.memory.geometries, tex: r.memory.textures, bake: this.world.baker.progress, scale: this.world.baker.scale, atlas: this.world.packInfo };
   }
 }

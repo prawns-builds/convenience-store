@@ -67,31 +67,28 @@ vec3 dbgIrr = vec3(0.0);
   uniform vec3 uProbeStatic;
   uniform float uProbeSky;
 #endif
-#ifdef WET
-  uniform float uWetness;
-  uniform float uPorosity;
-  uniform float uWetRough;
-#endif
-#ifdef PAINT
-  uniform vec3 uPaintColor;
-#endif
-#if defined(GRIME) || defined(STREAKS)
-  uniform sampler2D uNoiseTex;
-  uniform float uGrime;
-#endif
-#ifdef BOX_PROJ
-  uniform vec3 uBoxMin;
-  uniform vec3 uBoxMax;
-  uniform vec3 uProbePos;
-  vec3 boxProject(vec3 wp, vec3 dir) {
-    if (any(lessThan(wp, uBoxMin)) || any(greaterThan(wp, uBoxMax))) return dir;
-    vec3 t1 = (uBoxMax - wp) / dir;
-    vec3 t2 = (uBoxMin - wp) / dir;
-    vec3 tf = max(t1, t2);
-    float d = min(min(tf.x, tf.y), tf.z);
-    return normalize(wp + dir * d - uProbePos);
-  }
-#endif
+uniform float uWetness;
+uniform float uWetOn;
+uniform float uPorosity;
+uniform float uWetRough;
+uniform vec3 uPaintColor;
+uniform float uPaintOn;
+uniform sampler2D uNoiseTex;
+uniform float uGrime;
+uniform float uStreakOn;
+uniform float uPacked;
+uniform float uBoxOn;
+uniform vec3 uBoxMin;
+uniform vec3 uBoxMax;
+uniform vec3 uProbePos;
+vec3 boxProject(vec3 wp, vec3 dir) {
+  if (uBoxOn < 0.5 || any(lessThan(wp, uBoxMin)) || any(greaterThan(wp, uBoxMax))) return dir;
+  vec3 t1 = (uBoxMax - wp) / dir;
+  vec3 t2 = (uBoxMin - wp) / dir;
+  vec3 tf = max(t1, t2);
+  float d = min(min(tf.x, tf.y), tf.z);
+  return normalize(wp + dir * d - uProbePos);
+}
 #ifdef EMISSIVE_PULSE
   uniform float uEmissiveLevel;
 #endif
@@ -164,50 +161,34 @@ float texRough = 1.0;
 float texExtra = 1.0;
 #ifdef USE_MAP
   vec4 sampledDiffuseColor = texture2D(map, vMapUv);
-  #ifdef PACKED
-    texRough = sampledDiffuseColor.a;
-    diffuseColor.rgb *= sampledDiffuseColor.rgb;
-  #else
-    diffuseColor *= sampledDiffuseColor;
-  #endif
+  texRough = mix(1.0, sampledDiffuseColor.a, uPacked);
+  diffuseColor.rgb *= sampledDiffuseColor.rgb;
+  diffuseColor.a *= mix(sampledDiffuseColor.a, 1.0, uPacked);
 #endif
-#if defined(PACKED) && defined(USE_NORMALMAP)
-  texExtra = texture2D(normalMap, vNormalMapUv).a;
+#ifdef USE_NORMALMAP
+  texExtra = mix(1.0, texture2D(normalMap, vNormalMapUv).a, uPacked);
 #endif
-#ifdef PAINT
-  diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uPaintColor, texExtra);
-#endif
-#if defined(GRIME) || defined(STREAKS)
-  vec4 nzA = texture2D(uNoiseTex, vWorldX.xz * 0.045 + vWorldX.y * 0.021);
-#endif
-#ifdef GRIME
-  {
-    float g = nzA.r * 0.7 + nzA.g * 0.3;
-    diffuseColor.rgb *= 1.0 - uGrime * smoothstep(0.35, 0.8, g);
-    // darker band near the ground (splash-back dirt)
-    diffuseColor.rgb *= mix(0.62, 1.0, smoothstep(0.0, 0.7 + 0.4 * nzA.b, vWorldX.y));
-  }
-#endif
-float wet = 0.0;
-#ifdef WET
-  wet = smoothstep(0.10, 0.42, skyVis) * uWetness;
-  #ifdef STREAKS
-    {
-      vec4 nzS = texture2D(uNoiseTex, vec2(dot(vWorldX.xz, vec2(0.7071)) * 0.11, vWorldX.y * 0.012));
-      float streak = smoothstep(0.52, 0.75, nzS.a);
-      wet = max(wet, streak * 0.8 * uWetness * smoothstep(0.02, 0.15, skyVis));
-      diffuseColor.rgb *= 1.0 - 0.25 * streak * smoothstep(0.02, 0.2, skyVis);
-    }
-  #endif
-  diffuseColor.rgb *= mix(1.0, 1.0 - 0.55 * uPorosity, wet);
-#endif
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uPaintColor, texExtra * uPaintOn);
+vec4 nzA = texture2D(uNoiseTex, vWorldX.xz * 0.045 + vWorldX.y * 0.021);
+if (uGrime > 0.0) {
+  float g = nzA.r * 0.7 + nzA.g * 0.3;
+  diffuseColor.rgb *= 1.0 - uGrime * smoothstep(0.35, 0.8, g);
+  // darker band near the ground (splash-back dirt)
+  diffuseColor.rgb *= mix(0.62, 1.0, smoothstep(0.0, 0.7 + 0.4 * nzA.b, vWorldX.y));
+}
+float wet = smoothstep(0.10, 0.42, skyVis) * uWetness * uWetOn;
+if (uStreakOn > 0.5) {
+  vec4 nzS = texture2D(uNoiseTex, vec2(dot(vWorldX.xz, vec2(0.7071)) * 0.11, vWorldX.y * 0.012));
+  float streak = smoothstep(0.52, 0.75, nzS.a);
+  wet = max(wet, streak * 0.8 * uWetness * smoothstep(0.02, 0.15, skyVis));
+  diffuseColor.rgb *= 1.0 - 0.25 * streak * smoothstep(0.02, 0.2, skyVis);
+}
+diffuseColor.rgb *= mix(1.0, 1.0 - 0.55 * uPorosity, wet);
 `;
 
 const FRAG_ROUGH = /* glsl */ `
 roughnessFactor *= texRough;
-#ifdef WET
-  roughnessFactor = mix(roughnessFactor, min(roughnessFactor, uWetRough), wet);
-#endif
+roughnessFactor = mix(roughnessFactor, min(roughnessFactor, uWetRough), wet);
 `;
 
 // Appended after <lights_fragment_maps>
@@ -273,16 +254,20 @@ export function patchMaterial(mat, cfg = {}) {
     U.uProbeStatic = { value: new THREE.Vector3(0.05, 0.05, 0.05) };
     U.uProbeSky = { value: 0.0 };
   }
-  if (cfg.packed) defines.PACKED = '';
-  if (cfg.wet) { defines.WET = ''; U.uWetness = G.uWetness; U.uPorosity = { value: cfg.porosity ?? 0.5 }; U.uWetRough = { value: cfg.wetRough ?? 0.2 }; }
-  if (cfg.paint) { defines.PAINT = ''; U.uPaintColor = { value: new THREE.Color(cfg.paint) } ; }
-  if (cfg.grime || cfg.streaks) { U.uNoiseTex = G.uNoiseTex; U.uGrime = { value: cfg.grime ?? 0 }; }
-  if (cfg.grime) defines.GRIME = '';
-  if (cfg.streaks) defines.STREAKS = '';
-  if (cfg.boxProj) {
-    defines.BOX_PROJ = '';
-    U.uBoxMin = { value: cfg.boxProj.min.clone() }; U.uBoxMax = { value: cfg.boxProj.max.clone() }; U.uProbePos = { value: cfg.boxProj.pos.clone() };
-  }
+  U.uWetness = G.uWetness;
+  U.uWetOn = { value: cfg.wet ? 1 : 0 };
+  U.uPorosity = { value: cfg.porosity ?? 0.5 };
+  U.uWetRough = { value: cfg.wetRough ?? 0.2 };
+  U.uPaintColor = { value: new THREE.Color(cfg.paint ?? 0xffffff) };
+  U.uPaintOn = { value: cfg.paint !== undefined && cfg.paint !== null ? 1 : 0 };
+  U.uNoiseTex = G.uNoiseTex;
+  U.uGrime = { value: cfg.grime ?? 0 };
+  U.uStreakOn = { value: cfg.streaks ? 1 : 0 };
+  U.uPacked = { value: cfg.packed ? 1 : 0 };
+  U.uBoxOn = { value: cfg.boxProj ? 1 : 0 };
+  U.uBoxMin = { value: cfg.boxProj ? cfg.boxProj.min.clone() : new THREE.Vector3() };
+  U.uBoxMax = { value: cfg.boxProj ? cfg.boxProj.max.clone() : new THREE.Vector3() };
+  U.uProbePos = { value: cfg.boxProj ? cfg.boxProj.pos.clone() : new THREE.Vector3() };
   Object.assign(U, cfg.uniforms ?? {});
   mat.userData.uniforms = U;
   mat.userData.cfg = cfg;
@@ -302,7 +287,7 @@ export function patchMaterial(mat, cfg = {}) {
     if (cfg.afterNormal) fs = fs.replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + cfg.afterNormal);
     fs = fs.replace('#include <lights_fragment_maps>', '#include <lights_fragment_maps>\n' + FRAG_LIGHTS + (cfg.afterLights ?? ''));
     fs = fs.replace('#include <fog_fragment>', FRAG_FOG);
-    if (cfg.boxProj) fs = fs.replace('reflectVec = transformDirectionByInverseViewMatrix( reflectVec, viewMatrix );', 'reflectVec = transformDirectionByInverseViewMatrix( reflectVec, viewMatrix );\n reflectVec = boxProject(vWorldX, reflectVec);');
+    fs = fs.replace('reflectVec = transformDirectionByInverseViewMatrix( reflectVec, viewMatrix );', 'reflectVec = transformDirectionByInverseViewMatrix( reflectVec, viewMatrix );\n reflectVec = boxProject(vWorldX, reflectVec);');
     if (cfg.output) fs = fs.replace('#include <opaque_fragment>', cfg.output);
     fs = fs.replace('#include <tonemapping_fragment>', `#include <tonemapping_fragment>
       if (uDebugView == 1) gl_FragColor = vec4(diffuseColor.rgb, 1.0);

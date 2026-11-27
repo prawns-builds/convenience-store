@@ -221,7 +221,6 @@ export function makeGroundMaterial(tex) {
       uniform sampler2D tAsphaltA; uniform sampler2D tAsphaltN;
       uniform sampler2D tConcA; uniform sampler2D tConcN;
       uniform sampler2D tGrassA; uniform sampler2D tGrassN;
-      uniform sampler2D uNoiseTex;
       uniform float uStreetZ0; uniform float uStreetSpacing; uniform float uStreetX; uniform float uStreetH;
       uniform vec3 uStreetColor; uniform float uStreetI; uniform float uStreetSkipA; uniform float uStreetSkipB;
       uniform float uRain;
@@ -353,7 +352,6 @@ export function makeFloorMaterial(tex, opts = {}) {
     packed: true,
     uniforms: { uRefl0: G.uRefl0, uRefl1: G.uRefl1, uRefl2: G.uRefl2, uResolution: G.uResolution, uNoiseTex: G.uNoiseTex, uPlanarOn: G.uPlanarOn },
     variant: 'floor' + (opts.variant ?? ''),
-    fragPre: 'uniform sampler2D uNoiseTex;\n',
     beforeMain: PLANAR_GLSL,
     afterMap: /* glsl */ `
       {
@@ -396,7 +394,7 @@ export function makeGlassMaterial(opts = {}) {
     bake: opts.bake ?? 'none',
     variant: 'glass' + (opts.frost ? 'f' : '') + (opts.rain ? 'r' : ''),
     uniforms: { uNoiseTex: G.uNoiseTex, uRain: G.uRain },
-    fragPre: 'uniform sampler2D uNoiseTex; uniform float uRain;\n',
+    fragPre: 'uniform float uRain;\n',
     afterMap: /* glsl */ `
       {
         vec4 nz = texture2D(uNoiseTex, vec2(dot(vWorldX.xz, vec2(0.7071)), vWorldX.y) * 0.4);

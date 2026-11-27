@@ -34,12 +34,17 @@ async function start() {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* sandboxed */ } },
   };
-  const stored = params.get('q') ?? store.get('ns-quality') ?? 'auto';
+  const hashQ = (location.hash || '').replace('#', '');
+  const stored = params.get('q') ?? (['low', 'medium', 'high', 'ultra', 'auto'].includes(hashQ) ? hashQ : null) ?? store.get('ns-quality') ?? 'auto';
   qSel.value = ['auto', 'low', 'medium', 'high', 'ultra'].includes(stored) ? stored : 'auto';
   const qName = stored === 'auto' || !stored ? detectQuality(renderer) : stored;
   const q = resolveQuality(qName === 'auto' ? 'high' : qName);
   if (params.has('scale')) q.scale = Number(params.get('scale'));
-  qSel.addEventListener('change', () => { store.set('ns-quality', qSel.value); location.reload(); });
+  qSel.addEventListener('change', () => {
+    store.set('ns-quality', qSel.value);
+    try { location.hash = qSel.value; } catch (e) { /* ignore */ }
+    location.reload();
+  });
 
   const bar = document.getElementById('ov-bar');
   const status = document.getElementById('ov-status');
@@ -94,11 +99,16 @@ async function start() {
   btn.disabled = false;
   btn.textContent = 'BEGIN RECORDING';
   status.textContent = 'READY';
+  const audioBox = document.getElementById('ov-headphones');
+  const fsBox = document.getElementById('ov-fullscreen');
   const begin = () => {
     document.getElementById('overlay').classList.add('hidden');
     document.getElementById('hud').classList.remove('hidden');
+    if (fsBox?.checked && !document.fullscreenElement && document.documentElement.requestFullscreen) {
+      try { const p = document.documentElement.requestFullscreen({ navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ignore */ }
+    }
     input.requestLock();
-    game.begin();
+    game.begin(!audioBox?.checked);
   };
   btn.addEventListener('click', begin);
   input.onLockChange = (locked) => {

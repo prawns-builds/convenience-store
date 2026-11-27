@@ -15,6 +15,7 @@ import { buildRoadside } from './content/roadside.js';
 import { buildInterior } from './content/interior.js';
 import { buildVan } from './content/van.js';
 import { buildSky } from './content/sky.js';
+import { createFlashlightLight } from '../player/Flashlight.js';
 
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
@@ -252,6 +253,7 @@ export class World {
     this.meshes = meshes;
     progress(0.92, 'CAPTURING REFLECTIONS');
     await nextFrame();
+    this.flashLight = createFlashlightLight(this.scene, q);
     this.captureProbes();
     progress(0.96, 'COMPILING SHADERS');
     await nextFrame();
