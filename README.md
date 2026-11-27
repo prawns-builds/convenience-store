@@ -54,12 +54,15 @@ The pipeline is custom, built on `WebGLRenderer`.
    - **sky visibility** for ambient light, rain wetness and lightning, which therefore get shadows for free,
    - four **switchable light groups**: the sales floor, the wall lamp by the door, a faulty canopy tube and a faulty troffer/restroom light. Sky visibility rides in the spare alpha channels, so all four groups cost one texture fetch.
 
+   The bake is direct-only, so broad cosine emitters stand in for the first bounce: lit concrete onto the canopy ceiling, the shop floor onto the drop ceiling, and the warm sales floor spilling out through each window section onto the walkway (on the store circuit, so it goes dark with it).
+
    A preview is ready in well under a second on a real GPU. Refinement continues in the background over the first few seconds of play. At runtime each surface does a lightmap lookup plus a single dynamic shadowed spot light (the flashlight).
 2. **Directional lightmaps**, so normal maps react to the baked lights.
 3. **Planar reflections** (half resolution, mirrored camera) with a vertically biased blur chain. They give the long streaky reflections on wet asphalt, mirror-like puddles with **procedural rain ripples**, and a polished shop floor.
-4. **Wet materials** driven by baked sky exposure: darkening, gloss, puddles and wall streaks. Under the canopy and indoors stays dry.
+4. **Wet materials** driven by baked sky exposure: darkening, gloss, puddles, run-off stains under the roof line and iridescent oil films on the wet lot near the pumps. Under the canopy and indoors stays dry.
+   **Specular anti-aliasing** widens the highlight lobe where the shading normal varies within a pixel, so wet, rippled and normal-mapped surfaces don't sparkle in motion.
 5. **Atmosphere pass**: exponential height fog that only builds up past ~16 m, so the near field stays crisp while the street lights fade down the highway. An analytic in-scatter integral for about 30 lamps with a tight forward lobe (halos hug the lamps instead of veiling the frame), and a ray-marched, **shadowed volumetric flashlight beam** with drifting mist.
-6. **GPU rain**: about 12k camera-wrapped streaks, masked under the roof and canopy, lit by nearby lamps and the flashlight cone. Also ground splashes and drip lines off the canopy edges.
+6. **GPU rain**: about 12k camera-wrapped streaks, masked under the roof and canopy, lit by nearby lamps and the flashlight cone, blown by slowly varying wind gusts (the wind and rain audio follow them). Also ground splashes and drip lines off the canopy edges. Indoors, **dust motes** drift through the phone light, and a blown bulb throws a shower of sparks.
 7. **Bodycam post**: energy-conserving HDR mip-chain bloom, auto-exposure (which drives the HUD's ISO readout), AgX tone mapping with a contrast look, split-tone grade, contrast-adaptive sharpening (in log luminance, HDR safe), restrained barrel distortion and chromatic aberration, vignette and a light sensor grain. Camera motion blur is available but off by default.
 8. **Box-projected reflection probes** (PMREM), captured after the bake.
 9. **Procedural WebAudio**: rain that muffles indoors, drumming on the metal canopy, HRTF-positioned fluorescent buzz that follows the flicker, and cooler hum. Also surface-aware footsteps, the door chime, thunder, the phone bell and radio static. The HUD's L/R meters are driven by the real mix.

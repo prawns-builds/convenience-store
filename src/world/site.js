@@ -17,5 +17,5 @@ export const SITE = {
 
 // texture tile sizes (meters per repeat)
 export const UV = {
-  concrete: 4, stucco: 3.2, plaster: 2.5, vct: 1.2192, ceiling: 1.2192, metal: 1.0, wood: 1.6, asphalt: 2.0, groundcover: 6,
+  concrete: 4, stucco: 3.2, plaster: 2.5, vct: 1.2192, ceiling: 4.8768, metal: 1.0, wood: 1.6, asphalt: 2.0, groundcover: 6,
 };

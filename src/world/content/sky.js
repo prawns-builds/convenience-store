@@ -28,8 +28,8 @@ export function buildSky(ctx) {
       void main() {
         vec3 d = normalize(vDir);
         float h = d.y;
-        vec3 zen = vec3(0.0030, 0.0034, 0.0050);
-        vec3 hor = vec3(0.0125, 0.0122, 0.0138);
+        vec3 zen = vec3(0.0032, 0.0034, 0.0042);
+        vec3 hor = vec3(0.0132, 0.0128, 0.0130);
         vec3 col = mix(hor, zen, smoothstep(-0.02, 0.55, h));
         // town glow on the horizon to the south-east (warm, faint)
         float glow = pow(max(dot(normalize(vec3(d.x, 0.0, d.z)), normalize(vec3(0.4, 0.0, 1.0))), 0.0), 6.0) * smoothstep(0.35, 0.0, h);
@@ -40,7 +40,7 @@ export function buildSky(ctx) {
         float c3 = texture2D(tClouds, uv * 0.6 + vec2(0.5) + uTime * vec2(0.0008, 0.0012)).b;
         float dens = smoothstep(0.38, 0.78, c1 * 0.7 + c2 * 0.3 + c3 * 0.15);
         float edge = smoothstep(0.0, 0.25, dens) * (1.0 - smoothstep(0.4, 1.0, dens));
-        vec3 cloudBase = vec3(0.0105, 0.0102, 0.0112) * (0.35 + 1.35 * c2);
+        vec3 cloudBase = vec3(0.0110, 0.0106, 0.0106) * (0.35 + 1.35 * c2);
         // underside lit warm near the horizon (station + town glow)
         cloudBase += vec3(0.007, 0.0042, 0.002) * smoothstep(0.5, 0.05, h) * (0.5 + c3);
         float vis = smoothstep(-0.04, 0.12, h);

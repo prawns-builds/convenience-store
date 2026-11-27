@@ -54,6 +54,7 @@ export class Rain {
       uCamPos: { value: new THREE.Vector3() },
       uBox: { value: new THREE.Vector3(26, 16, 26) },
       uWind: { value: new THREE.Vector2(0.9, -0.5) },
+      uWindOfs: { value: new THREE.Vector2() }, // integrated wind drift (gusts change speed smoothly)
       uSpeed: { value: 8.5 },
       uLen: { value: 0.3 },
       uWidth: { value: 0.0016 },
@@ -82,14 +83,14 @@ export class Rain {
       uniforms: this.uniforms,
       vertexShader: /* glsl */ `
         attribute vec4 aSeed;
-        uniform float uTime; uniform vec3 uCamPos; uniform vec3 uBox; uniform vec2 uWind; uniform float uSpeed;
+        uniform float uTime; uniform vec3 uCamPos; uniform vec3 uBox; uniform vec2 uWind; uniform vec2 uWindOfs; uniform float uSpeed;
         uniform float uLen; uniform float uWidth; uniform vec2 uRes; uniform float uIntensity;
         varying vec2 vQ; varying vec3 vCol; varying float vA;
         ${LIGHTING_GLSL}
         void main() {
           float sp = uSpeed * (0.85 + aSeed.w * 0.3);
           vec3 vel = vec3(uWind.x, -sp, uWind.y);
-          vec3 wp = aSeed.xyz * uBox + vel * uTime;
+          vec3 wp = aSeed.xyz * uBox + vec3(uWindOfs.x, -sp * uTime, uWindOfs.y);
           vec3 o = uCamPos - uBox * 0.5;
           o.y = uCamPos.y - uBox.y * 0.35;
           vec3 p = mod(wp - o, uBox) + o;
@@ -264,8 +265,16 @@ export class Rain {
     U.uLightCount.value = n;
   }
 
-  update(camera, flashlight, res, groupLevels) {
+  update(camera, flashlight, res, groupLevels, dt = 0.016) {
     const U = this.uniforms;
+    // gusts: wind speed wanders smoothly; drift is integrated so streaks never jump
+    this._t = (this._t ?? 0) + dt;
+    const t = this._t;
+    const gust = 1.0 + 0.55 * Math.sin(t * 0.23) * Math.sin(t * 0.071 + 1.3) + 0.25 * Math.sin(t * 0.61 + 0.4);
+    U.uWind.value.set(0.9 * gust, -0.5 * gust);
+    U.uWindOfs.value.x += U.uWind.value.x * dt;
+    U.uWindOfs.value.y += U.uWind.value.y * dt;
+    this.gust = gust;
     // switchable lights (the wall lamp, the faulty canopy tube) also stop lighting the rain
     if (groupLevels && this.lightGroups) {
       for (let i = 0; i < this.lightGroups.length; i++) {

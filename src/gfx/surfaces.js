@@ -128,7 +128,7 @@ export const STUCCO = {
   float heightFn(vec2 uv) {
     float h = 0.5 + 0.12 * pfbm(uv * 40.0, vec2(40.0), 4, 0.5);
     h += 0.05 * pvnoise(uv * 400.0, vec2(400.0));
-    h -= 0.12 * joints(uv);
+    h -= 0.05 * joints(uv);
     h -= 0.08 * peel(uv);
     return h;
   }
@@ -136,11 +136,16 @@ export const STUCCO = {
     float p = peel(uv);
     float mottle = pfbm(uv * 5.0, vec2(5.0), 6, 0.6);
     float mold = smoothstep(0.15, 0.6, pfbm(uv * 9.0 + 4.0, vec2(9.0), 5, 0.6)) * smoothstep(-0.1, 0.4, pfbm(uv * 2.0 + 8.0, vec2(2.0), 3, 0.5));
-    vec3 paint = vec3(0.62, 0.60, 0.55) * (0.92 + 0.16 * mottle);
-    paint = mix(paint, paint * vec3(0.55, 0.58, 0.5), mold * 0.75);
+    vec3 paint = vec3(0.62, 0.60, 0.55) * (0.88 + 0.24 * mottle);
+    paint = mix(paint, paint * vec3(0.52, 0.56, 0.47), mold * 0.85);
+    // water marks: large soft blotches with darker tide lines
+    float wm = pfbm(uv * 2.0 + 3.3, vec2(2.0), 5, 0.55);
+    float blot = smoothstep(0.05, 0.3, wm);
+    float tide = smoothstep(0.03, 0.0, abs(wm - 0.05)) * 0.6;
+    paint *= 1.0 - 0.22 * blot - 0.18 * tide;
     vec3 under = vec3(0.30, 0.30, 0.29) * (0.9 + 0.2 * pvnoise(uv * 200.0, vec2(200.0)));
     albedo = mix(paint, under, p);
-    albedo *= 1.0 - 0.25 * joints(uv);
+    albedo *= 1.0 - 0.1 * joints(uv);
     float dots = smoothstep(0.75, 0.95, pvnoise(uv * 150.0, vec2(150.0)));
     albedo *= 1.0 - 0.3 * dots * mold;
     rough = mix(0.9, 0.95, p);
@@ -216,40 +221,49 @@ export const CEILING = {
   name: 'ceiling',
   normalStrength: 2.5,
   glsl: /* glsl */ `
+  // one texture repeat = 8 x 8 drop-ceiling tiles (4.88 m), so stains and ageing don't repeat
+  // in an obvious 2x2 pattern
+  const float NT = 8.0;
   float grid(vec2 uv) {
-    vec2 f = fract(uv * 2.0);
+    vec2 f = fract(uv * NT);
     float d = min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y));
     return 1.0 - smoothstep(0.016, 0.02, d);
   }
   float bevel(vec2 uv) {
-    vec2 f = fract(uv * 2.0);
+    vec2 f = fract(uv * NT);
     float d = min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y));
     return smoothstep(0.02, 0.045, d);
   }
   float fissure(vec2 uv) {
-    float n = pridged(uv * 26.0, vec2(26.0), 3);
-    float holes = smoothstep(0.82, 0.92, pvnoise(uv * 260.0, vec2(260.0)));
+    float n = pridged(uv * 104.0, vec2(104.0), 3);
+    float holes = smoothstep(0.82, 0.92, pvnoise(uv * 520.0, vec2(520.0)));
     return max(smoothstep(0.86, 0.95, n), holes);
   }
   float heightFn(vec2 uv) {
     float g = grid(uv);
-    float h = mix(0.3 + 0.2 * bevel(uv) - 0.25 * fissure(uv) + 0.04 * pvnoise(uv * 400.0, vec2(400.0)), 0.6, g);
+    float h = mix(0.3 + 0.2 * bevel(uv) - 0.25 * fissure(uv) + 0.04 * pvnoise(uv * 800.0, vec2(800.0)), 0.6, g);
     return h;
   }
   void surface(vec2 uv, out vec3 albedo, out float rough, out float extra) {
     float g = grid(uv);
-    vec2 id = floor(uv * 2.0);
+    vec2 id = floor(uv * NT);
     float age = hash12(id + 1.3);
-    vec3 tile = vec3(0.72, 0.71, 0.66) * (0.9 + 0.1 * age);
+    vec3 tile = vec3(0.72, 0.71, 0.66) * (0.88 + 0.12 * age);
+    // a few tiles yellowed by smoke / age
+    tile *= mix(vec3(1.0), vec3(0.96, 0.92, 0.82), step(0.82, hash12(id + 4.7)));
     tile *= 1.0 - 0.45 * fissure(uv);
-    float sag = pfbm(uv * 4.0, vec2(4.0), 4, 0.5);
+    float sag = pfbm(uv * 16.0, vec2(16.0), 4, 0.5);
     tile *= 0.94 + 0.06 * sag;
-    // water stain on some tiles
-    vec2 f = fract(uv * 2.0) - 0.5;
+    // irregular water stains on a few tiles: tide-line rings, size and shape vary per tile
+    vec2 f = fract(uv * NT) - 0.5;
     float stainSeed = hash12(id + 9.1);
-    float r = length(f + (hash22(id) - 0.5) * 0.4) + 0.06 * pfbm(uv * 12.0, vec2(12.0), 3, 0.5);
-    float ring = smoothstep(0.32, 0.28, r) * (0.4 + 0.6 * smoothstep(0.22, 0.31, r));
-    tile = mix(tile, tile * vec3(0.72, 0.6, 0.42), ring * step(0.7, stainSeed));
+    float size = 0.16 + 0.2 * hash12(id + 3.3);
+    float wob = pfbm(uv * 48.0 + id * 0.37, vec2(48.0), 4, 0.55);
+    float r = length((f + (hash22(id) - 0.5) * 0.35) * vec2(1.0, 0.8 + 0.4 * hash12(id + 2.2))) + 0.09 * wob;
+    float inside = smoothstep(size + 0.02, size - 0.02, r);
+    float ring = smoothstep(0.045, 0.0, abs(r - size));
+    float stain = (inside * 0.45 + ring * 0.8) * step(0.86, stainSeed);
+    tile = mix(tile, tile * vec3(0.74, 0.62, 0.45), stain);
     vec3 bar = vec3(0.78, 0.78, 0.76);
     albedo = mix(tile, bar, g);
     rough = mix(0.95, 0.45, g);

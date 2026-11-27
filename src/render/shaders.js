@@ -473,7 +473,8 @@ void main() {
   // grade: lift / gain, saturation, split tone (teal shadows, warm highlights)
   float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
   col = mix(vec3(l), col, uSaturation);
-  vec3 shadowsTint = vec3(0.92, 1.0, 1.04);
+  // olive-teal shadows, warm highlights (the reference's sodium-and-concrete palette)
+  vec3 shadowsTint = vec3(0.94, 1.0, 0.99);
   vec3 highTint = vec3(1.05, 1.0, 0.92);
   col *= mix(shadowsTint, highTint, smoothstep(0.05, 0.6, l));
   col = col * uGain + uLift * (1.0 - col);

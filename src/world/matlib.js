@@ -9,12 +9,13 @@ export const MATS = {
   concrete: { tex: 'concrete', color: 0xb0aca4, porosity: 0.7, wetRough: 0.2, grime: 0.25 },
   concreteDark: { tex: 'concrete', color: 0x77736c, porosity: 0.7, wetRough: 0.2, grime: 0.3 },
   curb: { tex: 'concrete', color: 0xb8b2a2, porosity: 0.6, wetRough: 0.2, grime: 0.35 },
-  stuccoWall: { tex: 'stucco', paint: 0xa49c86, porosity: 0.6, wetRough: 0.3, grime: 0.35, streaks: true },
+  stuccoWall: { tex: 'stucco', paint: 0x938f7b, porosity: 0.6, wetRough: 0.3, grime: 0.38, streaks: true },
+  stuccoDark: { tex: 'stucco', paint: 0x5f5e52, porosity: 0.6, wetRough: 0.3, grime: 0.4, streaks: true },
   stuccoBand: { tex: 'stucco', paint: 0x3b574b, porosity: 0.5, wetRough: 0.25, grime: 0.3, streaks: true },
-  stuccoRear: { tex: 'stucco', paint: 0x8c8676, porosity: 0.6, wetRough: 0.3, grime: 0.45, streaks: true },
+  stuccoRear: { tex: 'stucco', paint: 0x83806e, porosity: 0.6, wetRough: 0.3, grime: 0.45, streaks: true },
   pillarWhite: { tex: 'stucco', paint: 0xdedad0, porosity: 0.5, wetRough: 0.25, grime: 0.3, uvMul: 0.5 },
   pillarGreen: { tex: 'stucco', paint: 0x2c4a3e, porosity: 0.5, wetRough: 0.25, grime: 0.2, uvMul: 0.5 },
-  canopyUnder: { tex: 'concrete', color: 0xd9d5cb, porosity: 0.6, wetRough: 0.3, grime: 0.32 },
+  canopyUnder: { tex: 'concrete', color: 0xffffff, porosity: 0.6, wetRough: 0.3, grime: 0.26 },
   roof: { tex: 'asphalt', color: 0x888888, porosity: 0.3, wetRough: 0.15 },
   brick: { tex: 'stucco', paint: 0x5a3328, porosity: 0.6, wetRough: 0.3, grime: 0.4 },
   metalWhite: { tex: 'metal', paint: 0xe2dccb, porosity: 0.2, wetRough: 0.12 },
@@ -46,7 +47,7 @@ export const MATS = {
   cardboard: { color: 0x8a6a45, roughness: 0.85 },
   cardboardDark: { color: 0x6a5035, roughness: 0.85 },
   fabric: { color: 0x2a2a2e, roughness: 0.95 },
-  vanPaint: { tex: 'metal', paint: 0xb9b5aa, porosity: 0.1, wetRough: 0.08, roughness: 0.42, uvMul: 1.6 },
+  vanPaint: { tex: 'metal', paint: 0xbdb9ad, paintCover: 1.0, grime: 0.18, porosity: 0.1, wetRough: 0.08, roughness: 0.38, uvMul: 1.6 },
   porcelain: { color: 0xe8e6e0, roughness: 0.15 },
   mirrorDirty: { color: 0x7a7c7a, roughness: 0.25, metalness: 1.0 },
   bark: { tex: 'wood', color: 0x3a3028, porosity: 0.8, wetRough: 0.3, uvMul: 0.4 },
@@ -114,6 +115,7 @@ export class MaterialLib {
       porosity: def.porosity,
       wetRough: def.wetRough,
       paint: def.paint,
+      paintCover: def.paintCover,
       grime: def.grime,
       streaks: ext && def.streaks,
       boxProj: !ext && this.boxes[region] ? this.boxes[region] : null,
@@ -315,13 +317,25 @@ export function makeGroundMaterial(tex) {
       diffuseColor.rgb = alb;
       texRough = rgh;
       float groundPuddle = puddle;
+      // oil films on the wet lot (pump islands, parking): thin-film iridescence in reflections
+      float oilZone = smoothstep(9.0, 3.0, length(vec2(P.x - 11.2, (P.y + 2.2) * 0.45))) + smoothstep(4.0, 1.5, length(P - vec2(3.4, -1.9)));
+      float groundOil = stain * wLot * wetAmt * clamp(oilZone, 0.0, 1.0) * smoothstep(0.45, 0.7, nzH.b);
     `,
     afterNormal: /* glsl */ `
       normal = normalize((viewMatrix * vec4(groundNW, 0.0)).xyz);
     `,
     afterLights: /* glsl */ `
       #if defined(RE_IndirectSpecular)
-        radiance += planarReflection(groundNW, material.roughness, 0.03 + groundPuddle * 0.02);
+        {
+          vec3 pr = planarReflection(groundNW, material.roughness, 0.03 + groundPuddle * 0.02);
+          if (groundOil > 0.001) {
+            // film thickness varies across the slick; colour shifts with view angle
+            float th = 1.2 + 1.6 * texture2D(uNoiseTex, vWorldX.xz * 0.9).g + 0.8 * (1.0 - abs(dot(normalize(cameraPosition - vWorldX), vec3(0.0, 1.0, 0.0))));
+            vec3 film = 0.55 + 0.45 * cos(6.2831853 * (th * vec3(1.0, 0.82, 0.66) + vec3(0.0, 0.33, 0.67)));
+            pr *= mix(vec3(1.0), film * 1.6, groundOil);
+          }
+          radiance += pr;
+        }
       #endif
       {
         float k0 = floor((vWorldX.z - uStreetZ0) / uStreetSpacing + 0.5);

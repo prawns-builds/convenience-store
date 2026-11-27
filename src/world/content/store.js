@@ -110,7 +110,8 @@ export function buildStore(ctx) {
   const doorOpen = { z0: SITE.door.z0, z1: SITE.door.z1, y0: 0, y1: SITE.windowTop };
   const greenOpen = { z0: SITE.greenDoor.z0, z1: SITE.greenDoor.z1, y0: 0, y1: SITE.greenDoor.h };
   // front (east) wall: x in [-T, 0]
-  wallZ(b, { x0: -T, x1: 0, z0: S.z0, z1: PZ + 0.075, y1: H, extSide: 'px', intRegion: 'int', openings: [...winOpen, doorOpen] });
+  // storefront section sits under the canopy: darker weathered paint (reads dark in the reference)
+  wallZ(b, { x0: -T, x1: 0, z0: S.z0, z1: PZ + 0.075, y1: H, extSide: 'px', intRegion: 'int', extMat: 'stuccoDark', openings: [...winOpen, doorOpen] });
   wallZ(b, { x0: -T, x1: 0, z0: PZ + 0.075, z1: S.z1, y1: H, extSide: 'px', intRegion: 'back', intMat: 'plasterBack', openings: [greenOpen] });
   // back (west) wall
   wallZ(b, { x0: S.x0, x1: S.x0 + T, z0: S.z0, z1: PZ + 0.075, y1: H, extSide: 'nx', intRegion: 'int', extMat: 'stuccoRear' });
@@ -165,6 +166,14 @@ export function buildStore(ctx) {
     b.box('frame', [-0.12, SITE.windowTop - 0.02, (z0 + z1) / 2], [0.12, 0.05, z1 - z0], { mode: 'vtx', subdiv: 2 });
     // window sill outside
     b.box('metalDark', [0.04, SITE.kneeH - 0.015, (z0 + z1) / 2], [0.1, 0.03, z1 - z0], { mode: 'vtx', subdiv: 2 });
+    // warm light spilling out through the glass onto the walkway, bench and van (sales-floor
+    // circuit: it goes dark with the store)
+    // one emitter per glazed section so samples stay dense and the mullions cast shadows
+    const wy = SITE.windowTop - SITE.kneeH;
+    for (let i = 0; i < n; i++) {
+      const za = z0 + ((z1 - z0) * i) / n, zb = z0 + ((z1 - z0) * (i + 1)) / n;
+      ctx.light({ kind: 'rect', group: GROUP.STORE, pos: [0.06, SITE.kneeH + wy / 2, (za + zb) / 2], u: [0, 0, 1], v: [0, 1, 0], size: [zb - za - 0.12, wy - 0.1], color: 0xffd2a0, intensity: 0.75 * (zb - za), axis: [1, 0, 0], lambert: 1.0, cone: [-0.05, 0.2], range: 11, soft: 0.6 });
+    }
   }
   // door frame + transom
   const D = SITE.door;

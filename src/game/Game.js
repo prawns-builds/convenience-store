@@ -3,6 +3,7 @@ import { G } from '../gfx/Materials.js';
 import { HUD } from '../ui/HUD.js';
 import { GROUP } from '../world/World.js';
 import { Rain } from '../world/Rain.js';
+import { Dust } from '../world/Dust.js';
 import { CCTV } from './CCTV.js';
 import { Events } from './Events.js';
 import { AudioEngine } from '../audio/Audio.js';
@@ -66,6 +67,7 @@ export class Game {
     if (!p.has('cam')) this.player.setPose(7.6, 1.52, 23.5, THREE.MathUtils.degToRad(19), THREE.MathUtils.degToRad(-2));
     // rain + its light set (exterior static lights + street light heads)
     this.rain = new Rain(this.world.scene, this.quality);
+    this.dust = new Dust(this.world.scene, this.quality);
     const rl = [];
     for (const L of this.world.lights) {
       const pos = L.pos;
@@ -195,6 +197,7 @@ export class Game {
   }
 
   update(dt, now) {
+    this.renderer.info.reset();
     const inp = this.input;
     const W = this.world;
     if (!this.paused) this.time += dt;
@@ -236,7 +239,10 @@ export class Game {
       if (W.baker.done) { W.captureProbes(); W._readProbes(); W.baker.disposeAccumulators(); }
     }
     this.pipeline.params.lightning = G.uLightning.value;
-    this.rain.update(this.camera, this.flashlight, { x: this.pipeline.w, y: this.pipeline.h }, W.groupLevels);
+    const res = (this._res ??= { x: 0, y: 0 });
+    res.x = this.pipeline.w; res.y = this.pipeline.h;
+    this.rain.update(this.camera, this.flashlight, res, W.groupLevels, this.paused ? 0 : dt);
+    this.dust.update(this.camera, this.flashlight, res);
     this.cctv.update(dt);
     this.pipeline.render(W.scene, this.camera, dt);
     this.hud.update(dt);

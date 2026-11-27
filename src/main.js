@@ -17,7 +17,7 @@ renderer.toneMapping = THREE.NoToneMapping;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.shadowMap.autoUpdate = false;
-renderer.info.autoReset = true;
+renderer.info.autoReset = false; // reset once per frame in Game.update so stats show whole-frame totals
 setCanvasAniso(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
 
 if (params.get('test') === 'tex') {
@@ -40,6 +40,7 @@ async function start() {
   const qName = stored === 'auto' || !stored ? detectQuality(renderer) : stored;
   const q = resolveQuality(qName === 'auto' ? 'high' : qName);
   if (params.has('scale')) q.scale = Number(params.get('scale'));
+  if (params.has('samples')) q.bakeSamples = Number(params.get('samples')); // debug: bake sample count
   qSel.addEventListener('change', () => {
     store.set('ns-quality', qSel.value);
     try { location.hash = qSel.value; } catch (e) { /* ignore */ }

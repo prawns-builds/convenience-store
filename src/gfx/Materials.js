@@ -8,7 +8,7 @@ export const G = {
   uTime: { value: 0 },
   uLmScale: { value: 1 },
   uGroupColor: { value: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()] },
-  uSkyColor: { value: new THREE.Vector3(0.024, 0.026, 0.034) },
+  uSkyColor: { value: new THREE.Vector3(0.033, 0.035, 0.040) },
   uSpecOcc: { value: 2.0 },
   uWetness: { value: 1.0 },
   // lightmaps
@@ -20,7 +20,7 @@ export const G = {
   uReflPass: { value: 0 },
   uReflCamPos: { value: new THREE.Vector3() },
   // reflection-pass fog (set every frame from Pipeline.params)
-  uFogColor: { value: new THREE.Vector3(0.0066, 0.0067, 0.0078) },
+  uFogColor: { value: new THREE.Vector3(0.0074, 0.0078, 0.0080) },
   uFogDensity: { value: 0.016 },
   uFogStart: { value: 16 },
   uStoreMin: { value: new THREE.Vector2(-10.3, -7.3) },
@@ -76,6 +76,7 @@ uniform float uPorosity;
 uniform float uWetRough;
 uniform vec3 uPaintColor;
 uniform float uPaintOn;
+uniform float uPaintCover;
 uniform sampler2D uNoiseTex;
 uniform float uGrime;
 uniform float uStreakOn;
@@ -176,6 +177,8 @@ float texExtra = 1.0;
   texExtra = mix(1.0, texture2D(normalMap, vNormalMapUv).a, uPacked);
 #endif
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uPaintColor, texExtra * uPaintOn);
+// paint cover: repaint chipped / rusty patches (the texture's base there is rust, not primer)
+diffuseColor.rgb = mix(diffuseColor.rgb, uPaintColor * 0.8, (1.0 - texExtra) * uPaintCover * uPaintOn);
 vec4 nzA = texture2D(uNoiseTex, vWorldX.xz * 0.045 + vWorldX.y * 0.021);
 if (uGrime > 0.0) {
   float g = nzA.r * 0.7 + nzA.g * 0.3;
@@ -186,9 +189,11 @@ if (uGrime > 0.0) {
 float wet = smoothstep(0.10, 0.42, skyVis) * uWetness * uWetOn;
 if (uStreakOn > 0.5) {
   vec4 nzS = texture2D(uNoiseTex, vec2(dot(vWorldX.xz, vec2(0.7071)) * 0.11, vWorldX.y * 0.012));
-  float streak = smoothstep(0.52, 0.75, nzS.a);
+  // run-off stains: strongest under the roof edge, fading down the wall
+  float streak = smoothstep(0.5, 0.75, nzS.a) * mix(0.55, 1.0, smoothstep(1.2, 3.8, vWorldX.y));
   wet = max(wet, streak * 0.8 * uWetness * smoothstep(0.02, 0.15, skyVis));
-  diffuseColor.rgb *= 1.0 - 0.25 * streak * smoothstep(0.02, 0.2, skyVis);
+  diffuseColor.rgb *= 1.0 - 0.42 * streak * smoothstep(0.02, 0.2, skyVis);
+  diffuseColor.rgb *= mix(vec3(1.0), vec3(0.9, 0.95, 0.88), streak * 0.6); // algae tint
 }
 diffuseColor.rgb *= mix(1.0, 1.0 - 0.55 * uPorosity, wet);
 `;
@@ -225,6 +230,18 @@ const FRAG_LIGHTS = /* glsl */ `
   #endif
 }
 #endif
+`;
+
+// Specular anti-aliasing (Tokuyoshi & Kaplanyan): widen the GGX lobe where the shading normal
+// varies inside a pixel, so wet, normal-mapped and rippled surfaces don't sparkle in motion.
+const FRAG_SPECAA = /* glsl */ `
+{
+  vec3 ndx = dFdx(normal), ndy = dFdy(normal);
+  float nvar = 0.25 * (dot(ndx, ndx) + dot(ndy, ndy));
+  float ka = min(2.0 * nvar, 0.18);
+  float a = roughnessFactor * roughnessFactor;
+  roughnessFactor = sqrt(sqrt(min(a * a + ka, 1.0)));
+}
 `;
 
 const FRAG_FOG = /* glsl */ `
@@ -271,6 +288,7 @@ export function patchMaterial(mat, cfg = {}) {
   U.uWetRough = { value: cfg.wetRough ?? 0.2 };
   U.uPaintColor = { value: new THREE.Color(cfg.paint ?? 0xffffff) };
   U.uPaintOn = { value: cfg.paint !== undefined && cfg.paint !== null ? 1 : 0 };
+  U.uPaintCover = { value: cfg.paintCover ?? 0 }; // >0 hides chipped/rusty patches
   U.uNoiseTex = G.uNoiseTex;
   U.uGrime = { value: cfg.grime ?? 0 };
   U.uStreakOn = { value: cfg.streaks ? 1 : 0 };
@@ -295,7 +313,7 @@ export function patchMaterial(mat, cfg = {}) {
     fs = FRAG_PRE + (cfg.fragPre ?? '') + fs;
     fs = fs.replace('#include <map_fragment>', FRAG_MAP + (cfg.afterMap ?? ''));
     fs = fs.replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n' + FRAG_ROUGH + (cfg.afterRough ?? ''));
-    if (cfg.afterNormal) fs = fs.replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + cfg.afterNormal);
+    fs = fs.replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + (cfg.afterNormal ?? '') + (cfg.noSpecAA ? '' : FRAG_SPECAA));
     fs = fs.replace('#include <lights_fragment_maps>', '#include <lights_fragment_maps>\n' + FRAG_LIGHTS + (cfg.afterLights ?? ''));
     fs = fs.replace('#include <fog_fragment>', FRAG_FOG);
     fs = fs.replace('reflectVec = transformDirectionByInverseViewMatrix( reflectVec, viewMatrix );', 'reflectVec = transformDirectionByInverseViewMatrix( reflectVec, viewMatrix );\n reflectVec = boxProject(vWorldX, reflectVec);');

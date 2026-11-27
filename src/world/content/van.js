@@ -48,8 +48,11 @@ export function buildVan(ctx) {
   // rear doors: seam, windows, handles, tail lights, plate
   b.box('metalDark', [0, 1.25, 2.73], [0.012, 1.5, 0.008], { mode: 'vtx', subdiv: 4 });
   for (const s of [-1, 1]) {
-    b.box('plasticBlack', [s * 0.48, 1.68, 2.728], [0.7, 0.42, 0.01], { mode: 'vtx', subdiv: 4 });
-    b.box('plasticRed', [s * 0.88, 0.95, 2.728], [0.12, 0.28, 0.02], { mode: 'vtx', subdiv: 3 });
+    // solid cargo doors: pressed panel outline + tall tail lamps at the corners
+    b.box('metalDark', [s * 0.48, 1.72, 2.727], [0.74, 0.008, 0.006], { mode: 'vtx', subdiv: 2 });
+    b.box('metalDark', [s * 0.48, 0.86, 2.727], [0.74, 0.008, 0.006], { mode: 'vtx', subdiv: 2 });
+    b.box('plasticRed', [s * 0.9, 1.05, 2.728], [0.12, 0.42, 0.03], { mode: 'vtx', subdiv: 3 });
+    b.box('plasticWhite', [s * 0.9, 0.79, 2.728], [0.12, 0.09, 0.03], { mode: 'vtx', subdiv: 2 });
   }
   b.box('chrome', [0.15, 1.2, 2.735], [0.14, 0.03, 0.02], { mode: 'vtx', subdiv: 2 });
   if (!mats.custom.plate) {

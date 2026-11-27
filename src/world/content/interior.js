@@ -83,6 +83,28 @@ export function buildInterior(ctx) {
     }
   };
 
+  // shelf-edge price tags (canvas strip, repeats every 1.1 m along the price channel)
+  if (!mats.custom.priceTags) {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 32;
+    const x = c.getContext('2d');
+    x.fillStyle = '#d8d6cc'; x.fillRect(0, 0, 512, 32);
+    let px = 6;
+    while (px < 500) {
+      const w = 30 + Math.floor(r() * 12);
+      x.fillStyle = r() < 0.2 ? '#e8c62e' : '#f4f2ea';
+      x.fillRect(px, 3, w, 26);
+      x.fillStyle = '#1a1a1a';
+      x.font = 'bold 11px Arial, sans-serif';
+      x.fillText(`${(0.79 + Math.floor(r() * 60) * 0.1).toFixed(2)}`, px + 3, 15);
+      for (let k = 0; k < 9; k++) x.fillRect(px + 3 + k * 2.6, 19, r() < 0.5 ? 1 : 1.6, 7);
+      if (r() < 0.12) { x.fillStyle = '#c8261c'; x.fillRect(px, 3, w, 5); }
+      px += w + 14 + Math.floor(r() * 30);
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.anisotropy = 4;
+    mats.define('priceTags', { map: t, roughness: 0.35 });
+  }
+
   // ================================================================== GONDOLAS (aisles)
   const gondola = (x0, x1, zc) => {
     const L = x1 - x0, xc = (x0 + x1) / 2;
@@ -97,8 +119,9 @@ export function buildInterior(ctx) {
       const zf = zc + s * 0.47;
       for (const y of levels) {
         b.box('metalShelf', [xc, y, zc + s * 0.25], [L, 0.025, 0.45], { mode: 'vtx', subdiv: 3 });
-        // price channel strip
+        // price channel strip + tags on its face
         b.box('plasticWhite', [xc, y - 0.01, zf + s * 0.005], [L, 0.04, 0.012], { mode: 'vtx', subdiv: 2 });
+        b.quad('priceTags', [xc, y - 0.01, zf + s * 0.0115], [s, 0, 0], [0, 1, 0], L / 2, 0.019, { mode: 'vtx', subdiv: 2, uvScale: [1.1, 0.038], uvOffset: [0, -(y - 0.029) / 0.038] });
         fillRun(x0, x1, y + 0.0125, zf - s * 0.01, s, 0.42, 'x');
       }
     }
@@ -246,7 +269,7 @@ export function buildInterior(ctx) {
   // light bounced off the floor and shelves onto the ceiling / upper walls (the bake is
   // direct-only); on the sales-floor circuit so it goes dark with the store
   for (const zc of [-3.4, 2.9]) {
-    ctx.light({ kind: 'rect', pos: [-5.0, 0.3, zc], u: [1, 0, 0], v: [0, 0, 1], size: [8.4, 5.8], color: 0xffe0c0, intensity: 1.5, group: GROUP.STORE, axis: [0, 1, 0], lambert: 1.0, cone: [-0.05, 0.2], range: 10, soft: 1.3 });
+    ctx.light({ kind: 'rect', pos: [-5.0, 0.3, zc], u: [1, 0, 0], v: [0, 0, 1], size: [8.4, 5.8], color: 0xffe0c0, intensity: 4.0, group: GROUP.STORE, axis: [0, 1, 0], lambert: 1.0, cone: [-0.05, 0.2], range: 10, soft: 1.3 });
   }
   // exit sign above the entrance (inside)
   {

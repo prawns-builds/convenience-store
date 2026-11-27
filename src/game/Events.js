@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { G } from '../gfx/Materials.js';
 import { GROUP } from '../world/World.js';
 import { LAYER_NO_REFLECT } from '../render/Pipeline.js';
+import { Sparks } from '../world/Sparks.js';
 
 const LAYER_CCTV_ONLY = 3;
 
@@ -48,6 +49,7 @@ export class Events {
     W.scene.add(this.figCCTV);
     this.figCCTV.visible = false;
 
+    this.sparks = new Sparks(W.scene);
     // door hooks
     const entrance = W.dynamics.find((d) => d.name === 'entrance');
     if (entrance) entrance.onOpen = () => { this.state.enteredStore = true; };
@@ -120,7 +122,9 @@ export class Events {
     const lampPos = new THREE.Vector3(0.25, 3.0, 10.3);
     const stutter = [0.45, 1.0, 0.15, 0.9, 0.0, 0.7, 0.05, 0.55];
     stutter.forEach((lv, i) => this.after(i * 0.075 + Math.random() * 0.02, () => W.setGroupLevel(GROUP.LAMP, lv)));
-    this.after(0.66, () => { W.setGroupLevel(GROUP.LAMP, 0); g.audio?.play('pop', lampPos); });
+    // filament overdrive flash, then the bulb blows
+    this.after(0.62, () => W.setGroupLevel(GROUP.LAMP, 2.2));
+    this.after(0.66, () => { W.setGroupLevel(GROUP.LAMP, 0); g.audio?.play('pop', lampPos); this.sparks.burst(new THREE.Vector3(0.22, 2.96, 10.3), new THREE.Vector3(1, 0, 0)); });
     const storePos = new THREE.Vector3(-4.2, 2.9, 0.4);
     this.after(2.1, () => { W.setGroupLevel(GROUP.STORE, 0.5); g.audio?.play('powerdown', storePos); });
     this.after(2.2, () => W.setGroupLevel(GROUP.STORE, 0.85));
@@ -260,6 +264,7 @@ export class Events {
     // pending timers
     for (let i = this.pending.length - 1; i >= 0; i--) if (this.pending[i].t <= this.t) { const p = this.pending.splice(i, 1)[0]; p.fn(); }
     this._checkApproach();
+    this.sparks.update(dt, g.camera, g.pipeline.h);
     // lightning envelope
     let f = 0;
     for (const [t0, s] of this.flashSeq) { const dtt = this.t - t0; if (dtt >= 0) f = Math.max(f, s * Math.exp(-dtt * 14)); }

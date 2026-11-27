@@ -22,14 +22,14 @@ export class Pipeline {
     // highway), deep blacks, restrained lens effects. Values are scene-linear HDR.
     this.params = {
       fogDensity: 0.016, fogHeight: 7, fogStart: 16, dustDensity: 0.0012,
-      fogColor: new THREE.Color(0.0066, 0.0067, 0.0078), fogColorHigh: new THREE.Color(0.0040, 0.0042, 0.0052),
+      fogColor: new THREE.Color(0.0074, 0.0078, 0.0080), fogColorHigh: new THREE.Color(0.0047, 0.0050, 0.0055),
       bloomStrength: 0.045, bloomRadius: 1.0,
-      sharpen: 0.55, contrast: 1.18,
+      sharpen: 0.55, contrast: 1.1,
       distortion: 0.14, ca: 0.012, vignette: 0.5, grain: 0.011,
-      exposureBias: 1.0, saturation: 0.92,
-      lift: new THREE.Vector3(0.0012, 0.0014, 0.002), gain: new THREE.Vector3(1.0, 1.0, 1.0),
+      exposureBias: 1.0, saturation: 0.86,
+      lift: new THREE.Vector3(0.0026, 0.0029, 0.0028), gain: new THREE.Vector3(1.0, 1.0, 1.0),
       motionBlur: 0.0,
-      key: 0.03, minExp: 0.4, maxExp: 2.2,
+      key: 0.034, minExp: 0.4, maxExp: 2.4,
       flash: 0, glitch: 0, fade: 0, lightning: 0, glowGain: 3.0,
     };
     this.glows = [];

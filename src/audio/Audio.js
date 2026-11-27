@@ -388,13 +388,14 @@ export class AudioEngine {
     const leak = this.inside * (0.25 + doorOpen * 0.5);
     const set = (node, v) => node.gain.gain.setTargetAtTime(v, t, 0.08);
     const rain = g.world.rainAmount ?? 1;
-    set(this.rainOut, (0.34 * out + 0.12 * leak) * rain);
     set(this.rainHiss, (0.06 * out * (1 - this.under * 0.5)) * rain);
     set(this.rainTap, (0.16 * out * (1 - this.under * 0.6) + 0.03 * leak) * rain);
     set(this.rainIn, 0.55 * this.inside * rain);
     set(this.roofDrum, 0.22 * this.inside * rain);
     set(this.canopyDrum, (0.12 * this.under + 0.04 * out) * rain);
-    set(this.wind, 0.16 * out + 0.04);
+    const gust = g.rain?.gust ?? 1;
+    set(this.wind, (0.16 * out + 0.04) * (0.55 + 0.6 * gust));
+    set(this.rainOut, (0.34 * out + 0.12 * leak) * rain * (0.85 + 0.18 * gust));
     // thunder
     this.nextThunder -= dt;
     if (this.nextThunder <= 0) {

@@ -124,15 +124,17 @@ export function buildCanopy(ctx) {
     }
     if (state === 'dead') continue;
     // up-spill from the open channel lighting the slab around the fixture
-    ctx.light({ kind: 'tube', a: [fx, y - 0.05, fz - 0.55], b: [fx, y - 0.05, fz + 0.55], color: 0xe4eeff, intensity: 6.0, group: state === 'flicker' ? GROUP.FLICKER_EXT : -1, axis: [0, 1, 0], lambert: 0.6, cone: [-0.05, 0.25], range: 8, soft: 0.2 });
+    // bare tubes throw as much light up as down: a bright wash on the slab around each fixture
+    ctx.light({ kind: 'tube', a: [fx, y - 0.05, fz - 0.55], b: [fx, y - 0.05, fz + 0.55], color: 0xe4eeff, intensity: 11.0, group: state === 'flicker' ? GROUP.FLICKER_EXT : -1, axis: [0, 1, 0], lambert: 0.35, cone: [-0.25, 0.1], range: 9, soft: 0.35 });
     ctx.light({
       kind: 'tube', a: [fx, y - 0.04, fz - 0.6], b: [fx, y - 0.04, fz + 0.6], color: 0xe4eeff, intensity: 24,
       group: state === 'flicker' ? GROUP.FLICKER_EXT : -1, lambert: 0.3, cone: [-0.6, -0.05], range: 20, soft: 0.3,
-      glow: { power: 1.3, exterior: true, down: 0.35, color: 0xdfe8ff },
+      glow: { power: 0.7, exterior: true, down: 0.35, color: 0xdfe8ff },
     });
   }
-  // fill: light bounced from the wet concrete back onto the canopy underside & pumps
-  for (const [fx, fz] of [[4, -5], [10, -5], [4, 1.5], [10, 1.5]]) {
-    ctx.light({ kind: 'point', pos: [fx, 0.7, fz], color: 0x8a8884, intensity: 9.5, axis: [0, 1, 0], lambert: 1.0, cone: [-0.1, 0.25], range: 14, radius: 0.8, soft: 1.0 });
+  // fill: light bounced from the lit concrete back onto the canopy underside, pumps and the
+  // storefront (the bake is direct-only). Broad, soft, cosine-weighted emitters near the ground.
+  for (const [fx, fz] of [[3.4, -7.2], [9.8, -7.2], [3.4, -1.6], [9.8, -1.6], [3.4, 3.6], [9.8, 3.6]]) {
+    ctx.light({ kind: 'point', pos: [fx, 0.55, fz], color: 0x8e8c86, intensity: 20.0, axis: [0, 1, 0], lambert: 1.0, cone: [-0.2, 0.2], range: 15, radius: 1.4, soft: 1.6 });
   }
 }

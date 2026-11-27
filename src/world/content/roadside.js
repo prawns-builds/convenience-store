@@ -88,7 +88,7 @@ export function buildRoadside(ctx) {
     if (Math.abs(z - 8) < 1 || Math.abs(z + 24) < 1) {
       ctx.light({ kind: 'point', pos: [SITE.streetHeadX + 0.1, SITE.streetH - 0.12, z], radius: 0.18, color: 0xffcf9e, intensity: 110, axis: [0, -1, 0], lambert: 0.6, cone: [0.25, 0.55], range: 34, soft: 0.5 });
     }
-    ctx.glows.push({ pos: new THREE.Vector3(SITE.streetHeadX + 0.1, SITE.streetH - 0.25, z), color: new THREE.Color(0xffcc98), power: 6.0, exterior: true, down: 0.85, group: -1 });
+    ctx.glows.push({ pos: new THREE.Vector3(SITE.streetHeadX + 0.1, SITE.streetH - 0.25, z), color: new THREE.Color(0xffdcb8), power: 6.0, exterior: true, down: 0.85, group: -1 });
     b.circleCollider([SITE.streetPoleX, 0, z], 0.2, 0, 2);
   }
 
