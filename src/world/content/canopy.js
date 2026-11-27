@@ -124,7 +124,7 @@ export function buildCanopy(ctx) {
     }
     if (state === 'dead') continue;
     // up-spill from the open channel lighting the slab around the fixture
-    ctx.light({ kind: 'tube', a: [fx, y - 0.05, fz - 0.55], b: [fx, y - 0.05, fz + 0.55], color: 0xe4eeff, intensity: 4.0, group: state === 'flicker' ? GROUP.FLICKER_EXT : -1, axis: [0, 1, 0], lambert: 1, cone: [-0.05, 0.25], range: 7, soft: 0.2 });
+    ctx.light({ kind: 'tube', a: [fx, y - 0.05, fz - 0.55], b: [fx, y - 0.05, fz + 0.55], color: 0xe4eeff, intensity: 6.0, group: state === 'flicker' ? GROUP.FLICKER_EXT : -1, axis: [0, 1, 0], lambert: 0.6, cone: [-0.05, 0.25], range: 8, soft: 0.2 });
     ctx.light({
       kind: 'tube', a: [fx, y - 0.04, fz - 0.6], b: [fx, y - 0.04, fz + 0.6], color: 0xe4eeff, intensity: 24,
       group: state === 'flicker' ? GROUP.FLICKER_EXT : -1, lambert: 0.3, cone: [-0.6, -0.05], range: 20, soft: 0.3,
@@ -133,6 +133,6 @@ export function buildCanopy(ctx) {
   }
   // fill: light bounced from the wet concrete back onto the canopy underside & pumps
   for (const [fx, fz] of [[4, -5], [10, -5], [4, 1.5], [10, 1.5]]) {
-    ctx.light({ kind: 'point', pos: [fx, 0.7, fz], color: 0x8a8884, intensity: 7.5, axis: [0, 1, 0], lambert: 1.0, cone: [-0.1, 0.25], range: 14, radius: 0.8, soft: 1.0 });
+    ctx.light({ kind: 'point', pos: [fx, 0.7, fz], color: 0x8a8884, intensity: 9.5, axis: [0, 1, 0], lambert: 1.0, cone: [-0.1, 0.25], range: 14, radius: 0.8, soft: 1.0 });
   }
 }

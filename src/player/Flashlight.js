@@ -198,7 +198,8 @@ export class Flashlight {
     }
     this.level += (target - this.level) * (1 - Math.exp(-dt * 30));
     const L = this.light;
-    L.intensity = this.intensity * this.level;
+    this.nearSmooth = (this.nearSmooth ?? 1) + ((this.nearScale ?? 1) - (this.nearSmooth ?? 1)) * (1 - Math.exp(-dt * 8));
+    L.intensity = this.intensity * this.level * this.nearSmooth;
     // LED position (back of phone, top-left)
     const ledW = new THREE.Vector3(-0.004, 0.058, -0.012).applyMatrix4(this.rig.matrixWorld);
     L.position.copy(ledW);

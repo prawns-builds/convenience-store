@@ -13,12 +13,13 @@ export class AudioEngine {
     this._tmp = new THREE.Vector3();
   }
 
-  async start() {
+  start() {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
-    const ctx = new AC({ latencyHint: 'interactive' });
+    let ctx;
+    try { ctx = new AC({ latencyHint: 'interactive' }); } catch (e) { return; }
     this.ctx = ctx;
-    try { await ctx.resume(); } catch (e) { /* ignore */ }
+    try { const p = ctx.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ignore */ }
     const master = ctx.createGain();
     master.gain.value = 0.9;
     const comp = ctx.createDynamicsCompressor();
@@ -55,6 +56,18 @@ export class AudioEngine {
     this.buzzExt = this._buzz(new THREE.Vector3(6.5, 4.2, -2.5), 120, 0.05);
     this.buzzInt = this._buzz(new THREE.Vector3(-6.4, 2.9, -1.2), 120, 0.035);
     this.hum = this._hum(new THREE.Vector3(-9.0, 1.2, -2.0));
+    // counter radio: AM static with slow fading carrier
+    {
+      const pan = this._panner(new THREE.Vector3(-3.9, 1.05, 4.75), 1.2, 1.6);
+      const st = this._loop(this.crackle, { type: 'bandpass', freq: 2200, q: 0.7 }, 0.05, 1.0);
+      st.gain.disconnect(); st.gain.connect(pan);
+      const hiss = this._loop(this.white, { type: 'bandpass', freq: 1800, q: 1.2 }, 0.02, 1.0);
+      hiss.gain.disconnect(); hiss.gain.connect(pan);
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.13;
+      const lg = ctx.createGain(); lg.gain.value = 0.015;
+      lfo.connect(lg).connect(hiss.gain.gain); lfo.start();
+      this.radio = { st, hiss };
+    }
     this.officeHum = this._hum(new THREE.Vector3(-9.2, 1.0, 12.3), 0.015, 15734 / 4);
 
     this.listener = ctx.listener;
@@ -248,6 +261,49 @@ export class AudioEngine {
       case 'knock': for (let i = 0; i < 3; i++) { this._noiseHit(dest, t + i * 0.28, { buf: this.brown, type: 'lowpass', freq: 300, peak: 0.9, d: 0.12 }); this._noiseHit(dest, t + i * 0.28, { freq: 900, q: 2, peak: 0.15, d: 0.05 }); } break;
       default: break;
     }
+  }
+
+
+  // ------------------------------------------------------------------ passing car (doppler tire hiss + engine)
+  startCar(tr) {
+    if (!this.ctx || this.carNodes) return;
+    const ctx = this.ctx;
+    const pan = this._panner(new THREE.Vector3(tr.x, 0.5, tr.z), 8, 1.1);
+    const hiss = ctx.createBufferSource(); hiss.buffer = this.pink; hiss.loop = true;
+    const hf = ctx.createBiquadFilter(); hf.type = 'bandpass'; hf.frequency.value = 1500; hf.Q.value = 0.5;
+    const g = ctx.createGain(); g.gain.value = 0;
+    hiss.connect(hf).connect(g).connect(pan);
+    const eng = ctx.createOscillator(); eng.type = 'sawtooth'; eng.frequency.value = 52;
+    const ef = ctx.createBiquadFilter(); ef.type = 'lowpass'; ef.frequency.value = 200;
+    const eg = ctx.createGain(); eg.gain.value = 0;
+    eng.connect(ef).connect(eg).connect(pan);
+    hiss.start(); eng.start();
+    this.carNodes = { pan, g, eg, hiss, eng };
+  }
+  updateCar(tr) {
+    const c = this.carNodes;
+    if (!c || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    c.pan.positionX.setTargetAtTime(tr.x, t, 0.03);
+    c.pan.positionZ.setTargetAtTime(tr.z, t, 0.03);
+    const L = this.g.camera.position;
+    const dx = tr.x - L.x, dz = tr.z - L.z;
+    const d = Math.max(1, Math.hypot(dx, dz));
+    const vAway = tr.dir * tr.speed * (dz / d);
+    const dop = 343 / (343 + vAway);
+    c.hiss.playbackRate.setTargetAtTime(dop, t, 0.05);
+    c.eng.frequency.setTargetAtTime(52 * dop, t, 0.05);
+    const near = Math.max(0, 1 - d / 320);
+    c.g.gain.setTargetAtTime(0.6 * near * near, t, 0.08);
+    c.eg.gain.setTargetAtTime(0.1 * near * near, t, 0.08);
+  }
+  stopCar() {
+    const c = this.carNodes;
+    if (!c || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    c.g.gain.setTargetAtTime(0, t, 0.3); c.eg.gain.setTargetAtTime(0, t, 0.3);
+    try { c.hiss.stop(t + 1.5); c.eng.stop(t + 1.5); } catch (e) { /* ignore */ }
+    this.carNodes = null;
   }
 
   _isInside(p) { return p.x > -10 && p.x < 0 && p.z > -7 && p.z < 15; }

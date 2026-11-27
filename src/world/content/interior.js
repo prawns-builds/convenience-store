@@ -205,8 +205,9 @@ export function buildInterior(ctx) {
   // behind the counter: cigarette rack on the partition + phone + clock
   b.box('metalDark', [-2.4, 1.85, SITE.partitionZ - 0.18], [3.4, 1.3, 0.32], { lm: 16, skip: ['pz'] });
   for (let row = 0; row < 6; row++) {
-    for (let i = 0; i < 26; i++) {
-      const pos = new THREE.Vector3(-4.0 + i * 0.124, 1.26 + row * 0.205, SITE.partitionZ - 0.33);
+    for (let i = 0; i < 50; i++) {
+      if (r() < 0.06) continue; // a few empty slots
+      const pos = new THREE.Vector3(-4.0 + i * 0.064, 1.26 + row * 0.205, SITE.partitionZ - 0.33);
       sets.pBoxes.place(pos, Math.PI, new THREE.Vector3(0.056, 0.088, 0.022), new THREE.Vector3(0, 0, -1));
     }
   }
@@ -419,12 +420,29 @@ export function buildInterior(ctx) {
 
   // --- restroom: toilet, sink, mirror, tile wainscot, flickering light
   {
-    b.box('porcelain', [-9.35, 0.2, 9.4], [0.36, 0.4, 0.5], { mode: 'vtx', subdiv: 4 });
-    b.cylinder('porcelain', [-9.25, 0.4, 9.15], 0.2, 0.04, { segments: 14, subdiv: 1 });
-    b.box('porcelain', [-9.6, 0.62, 9.4], [0.18, 0.4, 0.5], { mode: 'vtx', subdiv: 3 });
-    b.boxCollider([-9.35, 0.4, 9.3], [0.6, 0.8, 0.7]);
-    b.box('porcelain', [-9.5, 0.82, 7.6], [0.4, 0.16, 0.5], { mode: 'vtx', subdiv: 3 });
-    b.box('chrome', [-9.62, 0.95, 7.6], [0.06, 0.14, 0.04], { mode: 'vtx', subdiv: 1 });
+    // toilet: pedestal + bowl + seat ring + tank + lid
+    b.cylinder('porcelain', [-9.3, 0.0, 9.35], 0.13, 0.3, { segments: 16, radiusTop: 0.16, subdiv: 3 });
+    b.pushTRS(-9.27, 0.3, 9.35, 0, 1.0, 1, 0.8);
+    b.cylinder('porcelain', [0, 0, 0], 0.17, 0.12, { segments: 20, radiusTop: 0.21, subdiv: 2, caps: [false, false] });
+    b.cylinder('plasticBlack', [0, 0.1, 0], 0.15, 0.005, { segments: 20, subdiv: 1, caps: [false, true] });
+    b.cylinder('plasticWhite', [0, 0.12, 0], 0.215, 0.025, { segments: 20, subdiv: 1, radiusTop: 0.205 });
+    b.pop();
+    b.box('porcelain', [-9.6, 0.62, 9.35], [0.18, 0.36, 0.46], { mode: 'vtx', subdiv: 4 });
+    b.box('porcelain', [-9.6, 0.815, 9.35], [0.2, 0.03, 0.48], { mode: 'vtx', subdiv: 3 });
+    b.box('chrome', [-9.5, 0.75, 9.18], [0.02, 0.02, 0.06], { mode: 'vtx', subdiv: 1 });
+    b.boxCollider([-9.35, 0.4, 9.35], [0.6, 0.8, 0.6]);
+    // wall-hung sink basin + faucet + exposed pipe
+    b.pushTRS(-9.47, 0.84, 7.6, 0, 1.0, 0.6, 1.0);
+    b.cylinder('porcelain', [0, -0.18, 0], 0.17, 0.18, { segments: 18, radiusTop: 0.24, subdiv: 2, caps: [true, false] });
+    b.pop();
+    b.cylinder('plasticBlack', [-9.47, 0.835, 7.6], 0.2, 0.004, { segments: 16, subdiv: 1, caps: [false, true] });
+    b.box('chrome', [-9.64, 0.92, 7.6], [0.05, 0.12, 0.04], { mode: 'vtx', subdiv: 1 });
+    b.box('chrome', [-9.58, 0.97, 7.6], [0.12, 0.025, 0.025], { mode: 'vtx', subdiv: 1 });
+    b.cylinder('steel', [-9.55, 0.12, 7.6], 0.02, 0.6, { segments: 8, subdiv: 1 });
+    b.boxCollider([-9.5, 0.6, 7.6], [0.4, 1.0, 0.5]);
+    // paper towel dispenser + trash can
+    b.box('plasticGrey', [-9.62, 1.35, 8.35], [0.14, 0.34, 0.3], { mode: 'vtx', subdiv: 3 });
+    b.cylinder('plasticGrey', [-7.35, 0, 7.05], 0.16, 0.45, { segments: 12, subdiv: 2 });
     b.quad('mirrorDirty', [-9.69, 1.55, 7.6], [0, 0, -1], [0, 1, 0], 0.28, 0.38, { mode: 'vtx', subdiv: 2 });
     // tile wainscot
     for (const [cx, cz, sx, sz] of [[-9.69, 8.5, 0.01, 3.7], [-8.35, 6.81, 2.6, 0.01], [-7.01, 8.5, 0.01, 3.7]]) {

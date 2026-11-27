@@ -68,7 +68,7 @@ export class Events {
     if (this.state.breakerOn && this.state.pumpFigure === 0 && this._outsideNearCanopy()) {
       this.state.pumpFigure = 1;
       this.figPump.visible = true;
-      this.after(0.45, () => { this.figPump.visible = false; this.state.pumpFigure = 2; this.g.audio?.play('sting'); });
+      this.after(0.45, () => { this.figPump.visible = false; this.state.pumpFigure = 2; this.g.audio?.play('sting'); this.g.glitch(0.8); });
     }
   }
   _outsideNearCanopy() { const p = this.g.player.pos; return p.x > -1 && p.x < 22 && p.z > -15 && p.z < 30; }
@@ -106,6 +106,7 @@ export class Events {
       this.state.phoneAnswered = true;
       g.audio?.play('static');
       g.hud.subtitle('Static. Then, very close to the mouthpiece: "...you turned the lights back on."', 5);
+      g.glitch(0.5);
       this.after(5.5, () => g.hud.subtitle('"He can see you now."', 3.5));
       this.after(6.0, () => { this.lightning(1.2); });
     } else {

@@ -202,7 +202,7 @@ void main() {
     float trans = exp(-dens * clamp(b, 0.0, tMax) * 0.7);
     // forward-scattering lobe: halos concentrate around lamps when looking toward them
     float toward = max(dot(rd, normalize(lp - uCamPos)), 0.0);
-    float lobe = 0.2 + 1.4 * pow(toward, 32.0) + 0.35 * pow(toward, 4.0);
+    float lobe = 0.1 + 1.5 * pow(toward, 32.0) + 0.4 * pow(toward, 4.0);
     acc += uGlowCol[i].rgb * total * dens * down * trans * 0.08 * uGlowGain * lobe;
   }
   gl_FragColor = vec4(acc, 1.0);

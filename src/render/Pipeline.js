@@ -241,13 +241,26 @@ export class Pipeline {
       V.uFlashShadowMatrix.value.copy(fl.light.shadow.matrix);
     } else V.uFlashOn.value = 0;
     V.uGlowGain.value = P.glowGain ?? 5;
-    const n = Math.min(32, this.glows.length);
+    // pick the 32 most relevant glow emitters for this camera
+    if (!this._glowSel) this._glowSel = [];
+    const sel = this._glowSel;
+    sel.length = 0;
+    for (const g of this.glows) {
+      const lv = g.level ? g.level() : 1;
+      const pw = g.power * lv;
+      if (pw <= 1e-4) continue;
+      const dx = g.pos.x - camPos.x, dy = g.pos.y - camPos.y, dz = g.pos.z - camPos.z;
+      g._score = pw / (dx * dx + dy * dy + dz * dz + 40);
+      g._pw = pw;
+      sel.push(g);
+    }
+    if (sel.length > 32) sel.sort((a, b) => b._score - a._score);
+    const n = Math.min(32, sel.length);
     V.uGlowCount.value = n;
     for (let i = 0; i < n; i++) {
-      const g = this.glows[i];
-      const lv = g.level ? g.level() : 1;
+      const g = sel[i];
       V.uGlowPos.value[i].set(g.pos.x, g.pos.y, g.pos.z, g.exterior ? 1 : 0);
-      V.uGlowCol.value[i].set(g.color.r * g.power * lv, g.color.g * g.power * lv, g.color.b * g.power * lv, g.down ?? 0.5);
+      V.uGlowCol.value[i].set(g.color.r * g._pw, g.color.g * g._pw, g.color.b * g._pw, g.down ?? 0.5);
     }
     this.vol.render(R, this.rts.vol);
 

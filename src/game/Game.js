@@ -5,6 +5,8 @@ import { GROUP } from '../world/World.js';
 import { Rain } from '../world/Rain.js';
 import { CCTV } from './CCTV.js';
 import { Events } from './Events.js';
+import { AudioEngine } from '../audio/Audio.js';
+import { Traffic } from '../world/Traffic.js';
 
 const NOTES = {
   rules: `NIGHT SHIFT RULES
@@ -72,23 +74,26 @@ export class Game {
     for (let k = -3; k <= 3; k++) rl.push({ pos: new THREE.Vector3(25.2, 8.4, 8 + k * 32), color: new THREE.Color(0xffa65a), exteriorRain: true, rainRange: 26, rainPower: 5.5 });
     this.rain.setLights(rl);
     this.cctv = new CCTV(this, this.world.ctx.cctvScreens ?? []);
+    this.traffic = new Traffic(this);
+    this.glitchT = 0;
     this.events = new Events(this);
   }
 
-  async begin(silent = false) {
+  begin(silent = false) {
+    const wasStarted = this.started;
     this.started = true;
-    this.paused = false;
     this.input.enabled = true;
+    // create/resume audio synchronously inside the user gesture (Safari autoplay rules)
     if (!silent && !this.audio) {
-      const { AudioEngine } = await import('../audio/Audio.js');
       this.audio = new AudioEngine(this);
-      await this.audio.start();
+      this.audio.start();
     }
-
+    if (wasStarted) this.pause(false); else this.paused = false;
   }
 
   pause(p) {
     this.paused = p;
+    if (!p) document.getElementById('overlay').classList.add('hidden');
     if (p) {
       document.getElementById('overlay').classList.remove('hidden');
       const btn = document.getElementById('ov-start');
@@ -185,7 +190,11 @@ export class Game {
       this.player.update(dt);
     }
     this.flashlight.gameTime = this.clockString(false);
+    this.flashlight.nearScale = this.flashNearScale();
     this.flashlight.update(dt, this.player, this.time);
+    if (!this.paused) this.traffic.update(dt);
+    if (this.glitchT > 0) { this.glitchT = Math.max(0, this.glitchT - dt); this.pipeline.params.glitch = Math.min(1, this.glitchT * 2.5) * (0.6 + 0.4 * Math.random()); }
+    else this.pipeline.params.glitch = 0;
     this.updateLights(dt);
     for (const d of W.dynamics) d.update?.(dt);
     // probe lighting for dynamic objects (staggered)
@@ -197,10 +206,11 @@ export class Game {
     }
     W.update(dt, this.time);
     if (!this.paused || this.params.has('cam')) this.events?.update(dt);
+    if (!this.hinted && this.started && !this.paused && this.time > 7 && !this.flashlight.on) { this.hinted = true; this.hud.subtitle('[F] Phone flashlight     [E] Interact', 4.5); }
     this.audio?.update(dt);
     // progressive bake refinement
     if (!W.baker.done) {
-      W.baker.step(this.quality.bakeBudget, this.params.has('shot') ? 1 : 4);
+      W.baker.step(this.quality.bakeBudget, this.params.has('shot') ? 3 : 4);
       if (W.baker.done) { W.captureProbes(); W._readProbes(); W.baker.disposeAccumulators(); }
     }
     this.pipeline.params.lightning = G.uLightning.value;
@@ -210,6 +220,45 @@ export class Game {
     this.hud.update(dt);
     this.updateDynRes(dt);
     inp.endFrame();
+  }
+
+  glitch(sec = 0.6) { this.glitchT = Math.max(this.glitchT, sec); }
+
+  // distance to what the phone light hits (2D collider raycast + floor plane) -> soften near-field blow-out
+  flashNearScale() {
+    const cam = this.camera;
+    const d = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
+    const o = cam.position;
+    let tHit = 30;
+    if (d.y < -0.05) tHit = Math.min(tHit, o.y / -d.y);
+    const hx = d.x, hz = d.z, hl = Math.hypot(hx, hz);
+    if (hl > 1e-3) {
+      const dx = hx / hl, dz = hz / hl;
+      for (const c of this.world.colliders) {
+        if (!c.enabled || c.y1 < 0.9 || c.y0 > 2.2) continue;
+        let t = Infinity;
+        if (c.type === 'circle') {
+          const ox = o.x - c.x, oz = o.z - c.z;
+          const b = ox * dx + oz * dz, cc = ox * ox + oz * oz - c.r * c.r;
+          const disc = b * b - cc;
+          if (disc >= 0) { const r = -b - Math.sqrt(disc); if (r > 0) t = r; }
+        } else {
+          const ox = o.x - c.x, oz = o.z - c.z;
+          const lx = c.cos * ox - c.sin * oz, lz = c.sin * ox + c.cos * oz;
+          const ldx = c.cos * dx - c.sin * dz, ldz = c.sin * dx + c.cos * dz;
+          let t0 = -Infinity, t1 = Infinity;
+          for (const [p, q, h] of [[lx, ldx, c.hx], [lz, ldz, c.hz]]) {
+            if (Math.abs(q) < 1e-6) { if (Math.abs(p) > h) { t0 = Infinity; break; } continue; }
+            let a = (-h - p) / q, b2 = (h - p) / q;
+            if (a > b2) [a, b2] = [b2, a];
+            t0 = Math.max(t0, a); t1 = Math.min(t1, b2);
+          }
+          if (t0 <= t1 && t0 > 0) t = t0;
+        }
+        if (t < Infinity) tHit = Math.min(tHit, t / hl);
+      }
+    }
+    return 0.32 + 0.68 * THREE.MathUtils.smoothstep(tHit, 0.35, 2.4);
   }
 
   clockString(withSeconds = true) {

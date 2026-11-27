@@ -246,6 +246,7 @@ export class World {
     console.log('[world] preview bake', ((performance.now() - tb0) / 1000).toFixed(2), 's');
     this.lights = ctx.lights;
     this.glows = ctx.glows;
+    for (const g of this.glows) if (g.group >= 0) g.level = () => this.groupLevels[g.group];
     this.interactables = ctx.interactables;
     this.dynamics = ctx.dynamics;
     this.meshes = meshes;

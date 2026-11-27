@@ -30,12 +30,16 @@ if (params.get('test') === 'tex') {
 
 async function start() {
   const qSel = document.getElementById('ov-quality');
-  const stored = params.get('q') ?? localStorage.getItem('ns-quality') ?? 'auto';
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* sandboxed */ } },
+  };
+  const stored = params.get('q') ?? store.get('ns-quality') ?? 'auto';
   qSel.value = ['auto', 'low', 'medium', 'high', 'ultra'].includes(stored) ? stored : 'auto';
   const qName = stored === 'auto' || !stored ? detectQuality(renderer) : stored;
   const q = resolveQuality(qName === 'auto' ? 'high' : qName);
   if (params.has('scale')) q.scale = Number(params.get('scale'));
-  qSel.addEventListener('change', () => { localStorage.setItem('ns-quality', qSel.value); location.reload(); });
+  qSel.addEventListener('change', () => { store.set('ns-quality', qSel.value); location.reload(); });
 
   const bar = document.getElementById('ov-bar');
   const status = document.getElementById('ov-status');
@@ -93,19 +97,21 @@ async function start() {
   const begin = () => {
     document.getElementById('overlay').classList.add('hidden');
     document.getElementById('hud').classList.remove('hidden');
-    game.begin();
     input.requestLock();
+    game.begin();
   };
   btn.addEventListener('click', begin);
   input.onLockChange = (locked) => {
-    if (!locked && game.started && !game.noteOpen) game.pause(true);
-    if (locked) game.pause(false);
+    if (!locked && game.started && !game.noteOpen && !input.dragLook) game.pause(true);
+    if (locked) { input.dragLook = false; game.pause(false); }
   };
+  input.onFallback = () => game.hud.subtitle('Mouse capture unavailable here — drag with the left button to look around.', 5);
+  addEventListener('keydown', (e) => {
+    if (e.code === 'Escape' && input.dragLook && game.started && !game.noteOpen) game.pause(!game.paused);
+  });
   document.getElementById('overlay').addEventListener('click', (e) => {
-    if (game.started && e.target.id !== 'ov-quality' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
-      document.getElementById('overlay').classList.add('hidden');
-      input.requestLock();
-    }
+    if (e.target === btn) return;
+    if (game.started && e.target.id !== 'ov-quality' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') begin();
   });
 
   if (params.has('autostart')) {
@@ -125,11 +131,12 @@ async function start() {
       if (over.flash !== undefined) flashlight.on = !!over.flash;
       if (over.breaker !== undefined) world.setGroupLevel(0, over.breaker);
       if (over.lightning) window.__game.events.lightning(over.lightning);
+      if (over.car !== undefined) { const tr = window.__game.traffic; tr.spawn(); tr.dir = 1; tr.x = 26.05; tr.z = over.car; tr.car.rotation.y = Math.PI; }
       if (over.rainAmb !== undefined) window.__game.rain.uniforms.uAmbient.value.setScalar(over.rainAmb);
       if (over.debug !== undefined) { G.uDebugView.value = over.debug; pipeline.params.debugRaw = over.debug > 0; }
       pipeline.expo.uniforms.uReset.value = 1;
       window.__viewDone = -1;
-      window.__viewReq = { i, frames: over.frames ?? 6 };
+      window.__viewReq = { i, frames: over.frames ?? 6, waitBake: !!over.waitBake };
     };
   }
   let last = performance.now();
@@ -143,7 +150,7 @@ async function start() {
       window.__info = game.debugInfo();
       window.__ready = true;
     }
-    if (window.__viewReq) {
+    if (window.__viewReq && !(window.__viewReq.waitBake && !world.baker.done)) {
       if (--window.__viewReq.frames <= 0) { window.__viewDone = window.__viewReq.i; window.__viewReq = null; window.__info = game.debugInfo(); }
     }
     requestAnimationFrame(loop);

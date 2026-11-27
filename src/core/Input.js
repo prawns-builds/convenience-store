@@ -23,7 +23,13 @@ export class Input {
       this.locked = document.pointerLockElement === canvas;
       if (this.onLockChange) this.onLockChange(this.locked);
     });
+    // drag-to-look fallback when pointer lock is unavailable (sandboxed frames, some browsers)
+    this.dragLook = false;
+    this.dragging = false;
+    addEventListener('mousedown', (e) => { if (this.dragLook && this.enabled && e.button === 0) this.dragging = true; });
+    addEventListener('mouseup', () => { this.dragging = false; });
     addEventListener('mousemove', (e) => {
+      if (this.dragLook && this.dragging && this.enabled && !this.locked) { this.dx += e.movementX * 1.4; this.dy += e.movementY * 1.4; return; }
       if (!this.locked || !this.enabled) return;
       // clamp spikes (some browsers report huge deltas on lock)
       const mx = Math.max(-300, Math.min(300, e.movementX));
@@ -65,7 +71,16 @@ export class Input {
     canvas.addEventListener('touchend', end);
     canvas.addEventListener('touchcancel', end);
   }
-  requestLock() { try { const p = this.canvas.requestPointerLock({ unadjustedMovement: true }); if (p && p.catch) p.catch(() => this.canvas.requestPointerLock()); } catch (e) { this.canvas.requestPointerLock(); } }
+  requestLock() {
+    const fallback = () => { if (!this.locked) { this.dragLook = true; if (this.onFallback) this.onFallback(); } };
+    try {
+      const p = this.canvas.requestPointerLock({ unadjustedMovement: true });
+      if (p && p.catch) p.catch(() => { try { const p2 = this.canvas.requestPointerLock(); if (p2 && p2.catch) p2.catch(fallback); } catch (e) { fallback(); } });
+    } catch (e) {
+      try { this.canvas.requestPointerLock(); } catch (e2) { fallback(); }
+    }
+    setTimeout(fallback, 700);
+  }
   down(code) { return this.keys.has(code); }
   hit(code) { return this.pressed.has(code); }
   axis() {
