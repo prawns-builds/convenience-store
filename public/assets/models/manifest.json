@@ -1,0 +1,553 @@
+[
+  {
+    "slug": "oil_drum_grey",
+    "source": "Poly Haven",
+    "assetId": "Barrel_01",
+    "url": "https://polyhaven.com/a/Barrel_01",
+    "license": "CC0",
+    "author": "Jorge Camacho",
+    "file": "assets/models/oil_drum_grey/oil_drum_grey.glb",
+    "sizeMeters": [
+      0.563,
+      0.88,
+      0.563
+    ],
+    "triangles": 2682,
+    "fileBytes": 451984,
+    "replaces": "barrel() oil-drum bins, src/world/content/canopy.js:44-53 (called at src/world/content/canopy.js:99 island barrels and src/world/content/canopy.js:110 store-corner barrel)",
+    "suggestedPlacements": "Store-corner barrel under the canopy (0.65,0,-4.9) and island 1 barrel; bins by the bench. Scale 1.0 (0.56 m dia x 0.88 m ~ standard 55-gal drum, matches existing r=0.29,H=0.88). Island barrels sit on the curb at y=0.18.",
+    "notes": "Poly Haven Barrel_01 mesh with its CC0 \"oxide_grey\" texture variant swapped in (default variant has a red explosive hazard decal, unsuitable). Open-top look is a closed lid - add the dark \"trash inside\" disc only if you cut the lid, otherwise use as a closed drum. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "oil_drum_green",
+    "source": "Poly Haven",
+    "assetId": "Barrel_01",
+    "url": "https://polyhaven.com/a/Barrel_01",
+    "license": "CC0",
+    "author": "Jorge Camacho",
+    "file": "assets/models/oil_drum_green/oil_drum_green.glb",
+    "sizeMeters": [
+      0.563,
+      0.88,
+      0.563
+    ],
+    "triangles": 2682,
+    "fileBytes": 453600,
+    "replaces": "barrel() green/white variant, src/world/content/canopy.js:99 (island 2, colors metalGreen)",
+    "suggestedPlacements": "Island 2 barrel at (ix+0.05, 0.18, iz+2.55). Mix with oil_drum_grey / oil_drum_blue around the lot (behind the store, by the propane cage).",
+    "notes": "Same mesh as oil_drum_grey with the CC0 \"oxide_green\" texture variant (rusty olive drum). Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "oil_drum_blue",
+    "source": "Poly Haven",
+    "assetId": "barrel_03",
+    "url": "https://polyhaven.com/a/barrel_03",
+    "license": "CC0",
+    "author": "Serhii Khromov",
+    "file": "assets/models/oil_drum_blue/oil_drum_blue.glb",
+    "sizeMeters": [
+      0.634,
+      0.93,
+      0.639
+    ],
+    "triangles": 1473,
+    "fileBytes": 330396,
+    "replaces": "new dressing (or alternate for src/world/content/canopy.js:44-53 barrel)",
+    "suggestedPlacements": "Behind the store / by the north-corner pallet (-1.8,0,-8.4) as a rain-water drum; or one of the island bins for variety.",
+    "notes": "Worn blue painted steel drum, lowest-poly drum (1.5k tris). Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "metal_trash_can",
+    "source": "Poly Haven",
+    "assetId": "metal_trash_can",
+    "url": "https://polyhaven.com/a/metal_trash_can",
+    "license": "CC0",
+    "author": "GurJas Studios",
+    "file": "assets/models/metal_trash_can/metal_trash_can.glb",
+    "sizeMeters": [
+      1.778,
+      0.906,
+      0.556
+    ],
+    "triangles": 13960,
+    "fileBytes": 1210548,
+    "replaces": "round black trash bin, src/world/content/props.js:86-91 (cylinder at 0.48,0,12.45 + dome lid)",
+    "suggestedPlacements": "Fa\u00e7ade bin at (0.48,0,12.45). File holds TWO cans side by side: node \"metal_trash_can\" (+lid/handles, galvanised, centre x=+0.5) and node group \"metal_trash_can_rust*\" (rusted, centre x=-0.5); each can ~0.61x0.91x0.55 m incl. handles. Lids are separate nodes leaning against the cans at x=+-0.86/0.14 - drop or re-seat them (lid-off can with a trash_bag next to it reads well). Re-centre the chosen node to x=0.",
+    "notes": "Galvanised steel cans fit a worn rural station better than the plastic dome bin. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "propane_tank",
+    "source": "Poly Haven",
+    "assetId": "propane_tank",
+    "url": "https://polyhaven.com/a/propane_tank",
+    "license": "CC0",
+    "author": "Slinc",
+    "file": "assets/models/propane_tank/propane_tank.glb",
+    "sizeMeters": [
+      0.337,
+      0.554,
+      0.337
+    ],
+    "triangles": 5238,
+    "fileBytes": 256000,
+    "replaces": "propane exchange cage tanks, src/world/content/props.js:130-133 (4x cylinder r=0.15,h=0.62 + valve)",
+    "suggestedPlacements": "Inside the propane cage at (cx-0.6+i*0.4, 0.02, cz-0.05), i=0..3; also 1-2 loose on the ground outside the cage. 0.34 m dia x 0.55 m tall (scale ~1.1 to match the old 0.62+0.08 m).",
+    "notes": "Red refillable LPG cylinder with a small \"S\" logo; tint the base colour toward white/grey via material.color multiply if you want the original white exchange tanks. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "caged_wall_lamp",
+    "source": "Poly Haven",
+    "assetId": "industrial_wall_lamp",
+    "url": "https://polyhaven.com/a/industrial_wall_lamp",
+    "license": "CC0",
+    "author": "Kuutti Siitonen",
+    "file": "assets/models/caged_wall_lamp/caged_wall_lamp.glb",
+    "sizeMeters": [
+      0.273,
+      0.43,
+      0.14
+    ],
+    "triangles": 4446,
+    "fileBytes": 287592,
+    "replaces": "wallLamp() caged fa\u00e7ade lamps, src/world/content/props.js:18-38 (calls at src/world/content/props.js:62-64)",
+    "suggestedPlacements": "Fa\u00e7ade lamps at (0,2.72,13.5), (0,3.0,10.3), (0,3.0,-6.75, broken). Back plate is at local z=0 and the lamp faces +Z, i.e. rotY=PI/2 puts it on the fa\u00e7ade facing +X like the existing code. 0.27 x 0.43 x 0.14 m.",
+    "notes": "Bulkhead (\"industrial_wall_lamp_glass\") uses KHR_materials_transmission + emissive_strength; replace that material with the project emissive (emBulbWarm) or plasticWhite for the broken one and keep the baked point light as is. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "street_bench",
+    "source": "Poly Haven",
+    "assetId": "modular_street_seating",
+    "url": "https://polyhaven.com/a/modular_street_seating",
+    "license": "CC0",
+    "author": "Stuart Attenborrow",
+    "file": "assets/models/street_bench/street_bench.glb",
+    "sizeMeters": [
+      2.452,
+      0.867,
+      0.67
+    ],
+    "triangles": 12500,
+    "fileBytes": 1091632,
+    "replaces": "bench(), src/world/content/props.js:40-57 (call at src/world/content/props.js:98, len 2.1)",
+    "suggestedPlacements": "Under the window at (0.62,0,-2.6) rotY=PI/2 (model front = +Z, seat back at -Z). 2.45 x 0.87 x 0.67 m.",
+    "notes": "Assembled single bench extracted from the CC0 modular_street_seating kit (connectors and the second seat module removed, re-centred on x). Timber slats + dark steel frame. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "utility_cabinet",
+    "source": "Poly Haven",
+    "assetId": "utility_box_01",
+    "url": "https://polyhaven.com/a/utility_box_01",
+    "license": "CC0",
+    "author": "James Ray Cock",
+    "file": "assets/models/utility_cabinet/utility_cabinet.glb",
+    "sizeMeters": [
+      0.52,
+      1.12,
+      0.432
+    ],
+    "triangles": 4404,
+    "fileBytes": 348380,
+    "replaces": "new dressing (closest primitive: electrical meter box src/world/content/props.js:92-95)",
+    "suggestedPlacements": "Ground-standing electrical cabinet at the foot of the service-drop pole or against the store end wall near the meter box (e.g. 0.35,0,6.3 rotY=PI/2). 0.52 x 1.12 x 0.43 m.",
+    "notes": "Blue steel cabinet with DANGER stickers. Too large to replace the wall-mounted meter box 1:1. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "cardboard_box",
+    "source": "Poly Haven",
+    "assetId": "cardboard_box_01",
+    "url": "https://polyhaven.com/a/cardboard_box_01",
+    "license": "CC0",
+    "author": "Rahul Chaudhary",
+    "file": "assets/models/cardboard_box/cardboard_box.glb",
+    "sizeMeters": [
+      0.387,
+      0.342,
+      0.516
+    ],
+    "triangles": 8476,
+    "fileBytes": 276676,
+    "replaces": "wet cardboard box, src/world/content/props.js:164 (box 0.6x0.36x0.45 at -1.0,0.18,-8.0)",
+    "suggestedPlacements": "North-corner junk pile (-1.0,0,-8.0), scale ~1.2; also on the stockroom pallet (-1.4,0.14,9.4) instead of some instanced pBoxesBack. 0.39 x 0.34 x 0.52 m.",
+    "notes": "Crumpled taped box; simplified from 17k to 8.5k tris. Darken base colour ~0.7 outdoors for \"wet\". Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "milk_crate",
+    "source": "Poly Haven",
+    "assetId": "plastic_crate_01",
+    "url": "https://polyhaven.com/a/plastic_crate_01",
+    "license": "CC0",
+    "author": "PierreB3D",
+    "file": "assets/models/milk_crate/milk_crate.glb",
+    "sizeMeters": [
+      0.298,
+      0.264,
+      0.408
+    ],
+    "triangles": 18320,
+    "fileBytes": 946912,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Stacked 2-3 high beside the north-corner pallet, one upturned by the side door as a seat, a few in the stockroom. 0.30 x 0.26 x 0.41 m.",
+    "notes": "Red milk crate (18k tris - instancing recommended if many). Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "old_tyre",
+    "source": "Poly Haven",
+    "assetId": "old_tyre",
+    "url": "https://polyhaven.com/a/old_tyre",
+    "license": "CC0",
+    "author": "MP",
+    "file": "assets/models/old_tyre/old_tyre.glb",
+    "sizeMeters": [
+      0.6,
+      0.6,
+      0.165
+    ],
+    "triangles": 2880,
+    "fileBytes": 462556,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Leaning against the fa\u00e7ade under the TIRES tin sign (0.15,0,7.45), stacked 2-3 by the north corner, one half-sunk in the scrub behind the store. Model axis: tyre stands upright in XY plane (0.6 m dia, 0.165 m wide along Z).",
+    "notes": "Weathered car tyre, 2.9k tris. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "jerrycan",
+    "source": "Poly Haven",
+    "assetId": "metal_jerrycan",
+    "url": "https://polyhaven.com/a/metal_jerrycan",
+    "license": "CC0",
+    "author": "Sean Buckley",
+    "file": "assets/models/jerrycan/jerrycan.glb",
+    "sizeMeters": [
+      0.35,
+      0.455,
+      0.172
+    ],
+    "triangles": 10010,
+    "fileBytes": 384276,
+    "replaces": "new dressing",
+    "suggestedPlacements": "On the pump island next to the squeegee bucket, by the propane cage, in the stockroom. 0.35 x 0.46 x 0.17 m.",
+    "notes": "Red 20 L steel jerrycan; simplified 20k -> 10k tris. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "trash_bag",
+    "source": "Poly Haven",
+    "assetId": "trashbag",
+    "url": "https://polyhaven.com/a/trashbag",
+    "license": "CC0",
+    "author": "Benny Weimer",
+    "file": "assets/models/trash_bag/trash_bag.glb",
+    "sizeMeters": [
+      0.528,
+      0.575,
+      0.463
+    ],
+    "triangles": 4482,
+    "fileBytes": 205972,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Beside / on top of the fa\u00e7ade trash can and behind the store by the side door. 0.53 x 0.58 x 0.46 m.",
+    "notes": "Black bin bag; glossy, reads well with the wet look. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "monobloc_chair",
+    "source": "Poly Haven",
+    "assetId": "plastic_monobloc_chair_01",
+    "url": "https://polyhaven.com/a/plastic_monobloc_chair_01",
+    "license": "CC0",
+    "author": "Kuutti Siitonen",
+    "file": "assets/models/monobloc_chair/monobloc_chair.glb",
+    "sizeMeters": [
+      0.642,
+      0.88,
+      0.628
+    ],
+    "triangles": 3356,
+    "fileBytes": 382412,
+    "replaces": "new dressing (optional: office chair src/world/content/interior.js:405-410)",
+    "suggestedPlacements": "Clerk's smoking spot by the side/green door with the rusted_can ashtray at its foot; optionally in the office instead of the primitive chair. 0.64 x 0.88 x 0.63 m.",
+    "notes": "Dirty white plastic garden chair, 3.4k tris. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "concrete_barrier",
+    "source": "Poly Haven",
+    "assetId": "concrete_road_barrier_02",
+    "url": "https://polyhaven.com/a/concrete_road_barrier_02",
+    "license": "CC0",
+    "author": "Amal Kumar",
+    "file": "assets/models/concrete_barrier/concrete_barrier.glb",
+    "sizeMeters": [
+      1.565,
+      1.112,
+      0.442
+    ],
+    "triangles": 23822,
+    "fileBytes": 1034320,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Lot edge / shoulder (x~22.6) between lot and road, and as a crumbling block at the lot corner; 1.57 x 1.11 x 0.44 m with lifting hooks.",
+    "notes": "Weathered precast block, 24k tris. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "aircon_unit",
+    "source": "Poly Haven",
+    "assetId": "exterior_aircon_unit",
+    "url": "https://polyhaven.com/a/exterior_aircon_unit",
+    "license": "CC0",
+    "author": "Monsta3D",
+    "file": "assets/models/aircon_unit/aircon_unit.glb",
+    "sizeMeters": [
+      1.8,
+      0.928,
+      0.374
+    ],
+    "triangles": 18986,
+    "fileBytes": 1569748,
+    "replaces": "new dressing",
+    "suggestedPlacements": "On the store back (x=-10) or north (z=-7) wall at ~0.4 m above ground. File holds TWO units: node \"exterior_aircon_unit\" (clean, centre x=-0.49) and \"exterior_aircon_unit_rusted\" (centre x=+0.51); each 0.80 x 0.93 x 0.37 m including mounting legs (min y=-0.32 below origin). Pick the rusted one.",
+    "notes": "Grille material uses alpha BLEND - switch to MASK (alphaTest 0.5) to avoid sorting issues. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "rusted_can",
+    "source": "Poly Haven",
+    "assetId": "can_rusted",
+    "url": "https://polyhaven.com/a/can_rusted",
+    "license": "CC0",
+    "author": "Rahul Chaudhary",
+    "file": "assets/models/rusted_can/rusted_can.glb",
+    "sizeMeters": [
+      0.125,
+      0.151,
+      0.125
+    ],
+    "triangles": 3520,
+    "fileBytes": 115972,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Cigarette-butt ashtray can next to the bench / monobloc chair / side door; also on the counter-side window ledge. 0.125 x 0.15 m.",
+    "notes": "3.5k tris, 256 px textures. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "portable_generator",
+    "source": "Poly Haven",
+    "assetId": "portable_generator",
+    "url": "https://polyhaven.com/a/portable_generator",
+    "license": "CC0",
+    "author": "James Ray Cock",
+    "file": "assets/models/portable_generator/portable_generator.glb",
+    "sizeMeters": [
+      0.818,
+      0.577,
+      0.564
+    ],
+    "triangles": 26419,
+    "fileBytes": 1387852,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Stockroom floor near the breaker panel or outside the side door under a tarp - plausible for a rural station with unreliable power (breaker story beat). 0.82 x 0.58 x 0.56 m.",
+    "notes": "Yellow open-frame generator; dial glass uses transmission - swap to plain glass material. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "rooibos_bush",
+    "source": "Poly Haven",
+    "assetId": "wild_rooibos_bush",
+    "url": "https://polyhaven.com/a/wild_rooibos_bush",
+    "license": "CC0",
+    "author": "James Ray Cock, Jenelle van Heerden",
+    "file": "assets/models/rooibos_bush/rooibos_bush.glb",
+    "sizeMeters": [
+      2.279,
+      0.541,
+      0.843
+    ],
+    "triangles": 27519,
+    "fileBytes": 1577904,
+    "replaces": "grass tufts / scrub cards, src/world/content/roadside.js:351-374 (closest), new dressing",
+    "suggestedPlacements": "Dry twiggy scrub along the lot-road shoulder (x 22.8-24), behind the store and along the fence line. FIVE separate bushes in one file (nodes _a.._e, 0.28-0.84 m wide, 0.31-0.54 m tall, laid out along X from -0.33 to 1.95); split per node and instance with random scale 1-2.5.",
+    "notes": "Fynbos shrub with sparse dry leaves - the most \"dry acacia-scrub\" fitting vegetation in Poly Haven. Leaf/twig materials converted from BLEND to MASK (alphaCutoff 0.5) using the CC0 alpha map merged into an RGBA diffuse (Poly Haven 1k glTF ships alpha-less JPGs). Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "roadside_weeds",
+    "source": "Poly Haven",
+    "assetId": "shrub_02",
+    "url": "https://polyhaven.com/a/shrub_02",
+    "license": "CC0",
+    "author": "Rico Cilliers",
+    "file": "assets/models/roadside_weeds/roadside_weeds.glb",
+    "sizeMeters": [
+      6.054,
+      1.703,
+      2.285
+    ],
+    "triangles": 27254,
+    "fileBytes": 946148,
+    "replaces": "grass tufts, src/world/content/roadside.js:351-374 (closest), new dressing",
+    "suggestedPlacements": "Weedy dry forb clumps in slab joints, fa\u00e7ade base and shoulders. FOUR clumps in one file (nodes shrub_02_a..d, ~1.1-1.8 m wide, 1.2-1.7 m tall, centres x=-1.44..3.42); split per node, scale 0.4-0.8 for slab joints.",
+    "notes": "Sparse straw-coloured weeds; MASK foliage with merged CC0 alpha map. Not a dense shrub despite the Poly Haven name. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "dry_branches",
+    "source": "Poly Haven",
+    "assetId": "dry_branches_medium_01",
+    "url": "https://polyhaven.com/a/dry_branches_medium_01",
+    "license": "CC0",
+    "author": "Rico Cilliers",
+    "file": "assets/models/dry_branches/dry_branches.glb",
+    "sizeMeters": [
+      1.059,
+      0.341,
+      1.299
+    ],
+    "triangles": 16803,
+    "fileBytes": 1100016,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Fallen dead branches under/around the procedural acacia trees and in the scrub behind the store. THREE branches (nodes _a,_b,_c: 1.3 m, 1.04 m, 0.78 m long).",
+    "notes": "Photoscanned dead wood, 16.8k tris total. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "boulder",
+    "source": "Poly Haven",
+    "assetId": "namaqualand_boulder_05",
+    "url": "https://polyhaven.com/a/namaqualand_boulder_05",
+    "license": "CC0",
+    "author": "Jenelle van Heerden, Dario Barresi",
+    "file": "assets/models/boulder/boulder.glb",
+    "sizeMeters": [
+      1.364,
+      0.538,
+      0.748
+    ],
+    "triangles": 31366,
+    "fileBytes": 1336312,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Weathered sandstone boulder at the lot edge/entrance, behind the store, a few in the field across the road. 1.36 x 0.54 x 0.75 m; sink ~5 cm into ground.",
+    "notes": "Photoscan simplified 90k -> 31k tris (normal map keeps detail). Same arid Namaqualand (South Africa) scan set fits the dry scrub landscape. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "rock_small",
+    "source": "Poly Haven",
+    "assetId": "rock_07",
+    "url": "https://polyhaven.com/a/rock_07",
+    "license": "CC0",
+    "author": "Jenelle van Heerden",
+    "file": "assets/models/rock_small/rock_small.glb",
+    "sizeMeters": [
+      0.169,
+      0.144,
+      0.32
+    ],
+    "triangles": 5936,
+    "fileBytes": 293076,
+    "replaces": "new dressing",
+    "suggestedPlacements": "Small loose rocks along the shoulder and at the base of fence posts/sign posts; instance with random rotation, scale 0.7-2. 0.17 x 0.14 x 0.32 m.",
+    "notes": "Simplified 15k -> 6k tris. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "wet_floor_sign",
+    "source": "Poly Haven",
+    "assetId": "WetFloorSign_01",
+    "url": "https://polyhaven.com/a/WetFloorSign_01",
+    "license": "CC0",
+    "author": "Fran Calvente",
+    "file": "assets/models/wet_floor_sign/wet_floor_sign.glb",
+    "sizeMeters": [
+      0.3,
+      0.63,
+      0.359
+    ],
+    "triangles": 228,
+    "fileBytes": 55764,
+    "replaces": "yellow A-frame wet-floor sign, src/world/content/interior.js:306-315 (pushTRS -2.4,0,1.15 rotY 0.5)",
+    "suggestedPlacements": "Same spot (-2.4,0,1.15) rotY 0.5. 0.30 x 0.63 x 0.36 m (old primitive 0.3 x 0.64).",
+    "notes": "228 tris - near free. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "crt_monitor",
+    "source": "Poly Haven",
+    "assetId": "television_02",
+    "url": "https://polyhaven.com/a/television_02",
+    "license": "CC0",
+    "author": "Benny Weimer",
+    "file": "assets/models/crt_monitor/crt_monitor.glb",
+    "sizeMeters": [
+      0.4,
+      0.411,
+      0.35
+    ],
+    "triangles": 2310,
+    "fileBytes": 135432,
+    "replaces": "CCTV CRT monitors, src/world/content/interior.js:387-390 (box 0.4x0.38x0.42 at -9.35,0.98,mz)",
+    "suggestedPlacements": "Office desk, two units at z=11.9 and 12.75, screen facing +X (rotY=PI/2 since model screen faces +Z), base on desk top y=0.76. 0.40 x 0.41 x 0.35 m. Also a fit for the counter CCTV monitor src/world/content/interior.js:184.",
+    "notes": "Grey 90s CRT TV. Screen is part of the single material - overlay the existing cctvScreens quad (pos x=-9.148) slightly in front of the glass, or override the screen region. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "desk_lamp",
+    "source": "Poly Haven",
+    "assetId": "desk_lamp_arm_01",
+    "url": "https://polyhaven.com/a/desk_lamp_arm_01",
+    "license": "CC0",
+    "author": "Yann Kervran, Kuutti Siitonen",
+    "file": "assets/models/desk_lamp/desk_lamp.glb",
+    "sizeMeters": [
+      0.202,
+      0.893,
+      0.614
+    ],
+    "triangles": 12458,
+    "fileBytes": 552124,
+    "replaces": "desk lamp, src/world/content/interior.js:393-397",
+    "suggestedPlacements": "Office desk at (-9.45,0.76,13.15). Base min y=-0.088 (clamp below origin) - lift by 0.088 if standing on its base or use clamp on the desk edge. 0.20 x 0.89 x 0.61 m (arm extended).",
+    "notes": "Orange architect lamp; bulb material \"desk_lamp_arm_01_light\" - map to emBulbWarm. Simplified 24k -> 12.5k tris. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "office_desk",
+    "source": "Poly Haven",
+    "assetId": "metal_office_desk",
+    "url": "https://polyhaven.com/a/metal_office_desk",
+    "license": "CC0",
+    "author": "Ulan Cabanilla",
+    "file": "assets/models/office_desk/office_desk.glb",
+    "sizeMeters": [
+      2,
+      0.788,
+      0.947
+    ],
+    "triangles": 6898,
+    "fileBytes": 376888,
+    "replaces": "office desk, src/world/content/interior.js:383-385 (laminate top 0.75x1.8 + legs + drawer pedestal)",
+    "suggestedPlacements": "Office at (-9.25,0,12.4) with rotY=PI/2 so its 2.0 m length runs along Z; scale ~0.9 to fit the 1.8 m slot (gives 1.8 x 0.71 x 0.85 m). Drawers are separate nodes (could be pulled open for story).",
+    "notes": "Grey steel tanker desk, 6.9k tris, 9 nodes. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "security_camera",
+    "source": "Poly Haven",
+    "assetId": "security_camera_02",
+    "url": "https://polyhaven.com/a/security_camera_02",
+    "license": "CC0",
+    "author": "Garrison Gager, Yann Kervran",
+    "file": "assets/models/security_camera/security_camera.glb",
+    "sizeMeters": [
+      0.141,
+      0.209,
+      0.394
+    ],
+    "triangles": 6237,
+    "fileBytes": 280132,
+    "replaces": "security camera dome, src/world/content/interior.js:253-255",
+    "suggestedPlacements": "Corner mount (-0.6,2.93,-6.4) and one outside on the canopy-side fa\u00e7ade corner. Mount plate at local z=0, lens points +Z. 0.14 x 0.21 x 0.39 m.",
+    "notes": "Box camera with wall arm; simplified 12.5k -> 6.2k tris. Lens glass material - fine as is or set to plain dark. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  },
+  {
+    "slug": "breaker_box",
+    "source": "Poly Haven",
+    "assetId": "power_box_01",
+    "url": "https://polyhaven.com/a/power_box_01",
+    "license": "CC0",
+    "author": "Rico Cilliers, Yann Kervran",
+    "file": "assets/models/breaker_box/breaker_box.glb",
+    "sizeMeters": [
+      0.461,
+      0.503,
+      0.399
+    ],
+    "triangles": 12761,
+    "fileBytes": 604060,
+    "replaces": "breaker panel body, src/world/content/interior.js:361-372 (box 0.12x0.8x0.5 + breaker face quad + open door)",
+    "suggestedPlacements": "Wall at (-0.3,1.55,11.7) facing -X (rotY=-PI/2). 0.46 x 0.50 x 0.40 m incl. open door; scale ~1.3-1.5 to match the old 0.8 m tall panel. Door is a separate node \"power_box_01_door\" (already open) - keep the interact() hook; the breakerFace texture quad can be dropped (model shows real breakers).",
+    "notes": "Opened distribution board with labelled breakers; simplified 21k -> 12.8k tris. Packed from the 1K glTF: single .glb, WebP textures (EXT_texture_webp; three.js GLTFLoader handles it natively), Y-up, metres, origin at base centre unless noted."
+  }
+]
