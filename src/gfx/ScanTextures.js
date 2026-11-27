@@ -33,18 +33,18 @@ export const SCANS = {
   brick: { dir: 'exterior/brick', tile: 1.4, match: 'stucco', extra: 'one', desat: 0.1 },
   bark: { dir: 'exterior/bark', tile: 2.15, match: 'wood', extra: 'one', desat: 0.6 },
   // ---- interior
-  vct: { dir: 'interior/vct-checker', tile: 1.2192, match: 'vct', extra: 'one', desat: 0.6 },
+  vct: { noAo: true, dir: 'interior/vct-checker', tile: 1.2192, match: 'vct', extra: 'one', desat: 0.6 },
   ceiling: { dir: 'interior/ceiling-tile', tile: 3.66, match: 'ceiling', extra: 'one', desat: 0.8, ao: 0.8 },
-  plaster: { dir: 'interior/plaster-painted', tile: [2.0, 1.0], match: 'plaster', extra: 'one', desat: 1.0 },
+  plaster: { noAo: true, dir: 'interior/plaster-painted', tile: [2.0, 1.0], match: 'plaster', extra: 'one', desat: 1.0 },
   walltile: { dir: 'interior/wall-tile-glazed', tile: 1.3, match: 'plaster', extra: 'one', desat: 0.8, ao: 0.6 },
   wood: { dir: 'interior/laminate-wood', tile: 0.6, match: 'wood', extra: 'one' },
-  countertop: { dir: 'interior/countertop-laminate', tile: 1.0, match: 'plaster', extra: 'one', desat: 0.8 },
-  shelfpaint: { dir: 'interior/metal-painted', tile: 1.0, detail: 0.8, extra: 'one', desat: 1.0 },
-  steel: { dir: 'interior/steel-brushed', tile: 1.0, detail: 0.8, extra: 'one', desat: 1.0 },
-  aluminum: { dir: 'interior/aluminum-scratched', tile: 1.0, detail: 0.8, extra: 'one', desat: 1.0 },
-  cardboard: { dir: 'interior/cardboard', tile: 1.0, detail: 0.8, extra: 'one', desat: 0.7 },
+  countertop: { noAo: true, dir: 'interior/countertop-laminate', tile: 1.0, match: 'plaster', extra: 'one', desat: 0.8 },
+  shelfpaint: { noAo: true, dir: 'interior/metal-painted', tile: 1.0, detail: 0.8, extra: 'one', desat: 1.0 },
+  steel: { noAo: true, dir: 'interior/steel-brushed', tile: 1.0, detail: 0.8, extra: 'one', desat: 1.0 },
+  aluminum: { noAo: true, dir: 'interior/aluminum-scratched', tile: 1.0, detail: 0.8, extra: 'one', desat: 1.0 },
+  cardboard: { noAo: true, dir: 'interior/cardboard', tile: 1.0, detail: 0.8, extra: 'one', desat: 0.7 },
   fabric: { dir: 'interior/fabric', tile: 0.5, detail: 0.8, extra: 'one', desat: 1.0 },
-  rubber: { dir: 'interior/rubber-mat', tile: 0.75, detail: 0.8, extra: 'one', desat: 1.0 },
+  rubber: { noAo: true, dir: 'interior/rubber-mat', tile: 0.75, detail: 0.8, extra: 'one', desat: 1.0 },
 };
 
 const loader = new THREE.TextureLoader();
@@ -70,7 +70,7 @@ export function fetchScans() {
       loadTex(base + 'albedo.jpg', true),
       loadTex(base + 'normal.jpg', false),
       loadTex(base + 'roughness.jpg', false),
-      loadTex(base + 'ao.jpg', false).catch(() => WHITE),
+      s.noAo ? Promise.resolve(WHITE) : loadTex(base + 'ao.jpg', false).catch(() => WHITE),
     ]).then(([albedo, normal, rough, ao]) => ({ albedo, normal, rough, ao }))
       .catch((e) => { console.warn('[scan] missing', key, e?.message ?? e); return null; });
   }
