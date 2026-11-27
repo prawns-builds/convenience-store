@@ -133,10 +133,76 @@ export class Events {
       g.glitch(0.5);
       this.after(5.5, () => g.hud.subtitle('"He can see you now."', 3.5));
       this.after(6.0, () => { this.lightning(1.2); });
+      this.after(24.0, () => this.startEnding());
     } else {
       g.audio?.play('static');
       g.hud.subtitle('Dial tone. Then nothing at all.');
     }
+  }
+
+  // ---------------------------------------------------------------- ending
+  // Put a figure on the camera's forward line at a visible distance, facing the camera.
+  placeInView(fig, dmin, dmax) {
+    const g = this.g;
+    const cam = g.camera;
+    const cp = cam.position;
+    const f = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
+    f.y = 0;
+    if (f.lengthSq() < 1e-4) f.set(0, 0, -1);
+    f.normalize();
+    let d = dmax;
+    for (; d >= dmin; d -= 0.5) {
+      const t = cp.clone().addScaledVector(f, d);
+      if (g.lineOfSight(cp, t)) break;
+    }
+    d = Math.max(2.2, d);
+    const p = cp.clone().addScaledVector(f, d);
+    fig.position.set(p.x, 0, p.z);
+    fig.rotation.y = Math.atan2(cp.x - p.x, cp.z - p.z);
+    fig.updateMatrixWorld(true);
+  }
+
+  startEnding() {
+    if (this.endingStarted) return;
+    this.endingStarted = true;
+    const g = this.g, W = g.world;
+    g.audio?.play('sting');
+    g.glitch(1.2);
+    [0.9, 0.15, 0.7, 0.0, 0.4, 0.0].forEach((lv, i) => this.after(0.1 + i * 0.14, () => { W.setGroupLevel(GROUP.BREAKER, lv); if (lv > 0.3) g.audio?.play('tink', new THREE.Vector3(-4.8, 2.9, -1)); }));
+    this.after(0.95, () => { this.intDead = true; });
+    this.after(2.3, () => {
+      this.placeInView(this.figPump, 3.5, 7.0);
+      this.figPump.visible = true;
+      this.state.pumpFigure = 2;
+      this.lightning(1.8);
+    });
+    this.after(2.85, () => { this.figPump.visible = false; g.glitch(3.0); g.audio?.play('static'); });
+    this.after(3.3, () => { this.fading = true; g.audio?.fadeOut?.(1.6); });
+    this.after(5.0, () => this.showEndCard());
+  }
+
+  showEndCard() {
+    const g = this.g;
+    g.ending = true;
+    g.paused = true;
+    document.getElementById('end-meta').textContent = `UNIT 0731 · CAM 02 · ${g.clockString(true)}`;
+    const card = document.getElementById('endcard');
+    card.classList.remove('hidden');
+    try { document.exitPointerLock?.(); } catch (e) { /* ignore */ }
+    const dismiss = () => {
+      removeEventListener('keydown', dismiss, true);
+      card.removeEventListener('click', dismiss);
+      card.classList.add('hidden');
+      this.fading = false;
+      g.pipeline.params.fade = 0;
+      this.intDead = false;
+      g.ending = false;
+      g.audio?.fadeIn?.(1.0);
+      g.input.requestLock();
+      g.pause(false);
+      g.hud.subtitle('The recording continues.', 3);
+    };
+    setTimeout(() => { addEventListener('keydown', dismiss, true); card.addEventListener('click', dismiss); }, 1200);
   }
 
   payphone() {
@@ -196,6 +262,8 @@ export class Events {
     }
     // CCTV-only figure appears after the phone call
     this.figCCTV.visible = st.phoneAnswered;
+    // ending fade to black
+    if (this.fading) g.pipeline.params.fade = Math.min(1, g.pipeline.params.fade + dt / 1.6);
   }
 }
 

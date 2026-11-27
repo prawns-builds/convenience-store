@@ -26,7 +26,7 @@ Click **BEGIN RECORDING**. The browser locks the mouse and starts the audio.
 | `Esc` | pause |
 | `F3` | performance overlay |
 
-On touch screens, the left half of the screen is a move stick and dragging on the right half looks around. A quick tap interacts.
+On touch screens, the left half of the screen is a move stick and dragging on the right half looks around. A quick tap interacts. If the browser or an embedding frame refuses mouse capture, it falls back to left-drag to look.
 
 The quality setting is on the title screen (AUTO / LOW / MEDIUM / HIGH / ULTRA) and is saved to localStorage. AUTO picks a preset from the GPU. You can also pass `?q=high`.
 
@@ -34,7 +34,8 @@ The quality setting is on the title screen (AUTO / LOW / MEDIUM / HIGH / ULTRA) 
 
 - **Exterior**: concrete-block store with a parapet roof, chimney and TV aerial. Caged wall lamps and weathered tin signs. An ICE merchandiser, a bench, oil-drum bins, a payphone and a propane cage. A fluorescent canopy with chipped-paint pillars, steel Y-brackets, vintage pumps with hoses and painted bollards. An old radio-station cargo van. A lit price sign, cobra-head street lights that fade into the fog, power lines, a fence line and acacia-like trees.
 - **Interior**: a checkered VCT floor and drop ceiling with two missing tiles. A glass-door cooler bank lit from inside, gondola aisles stocked with about 1,500 instanced products (procedural label atlas) and an L counter with register, lottery, candy rack and cigarette wall. Pendant lamps, a coffee station, a hot-dog roller, an ATM, an EXIT sign and a wet-floor sign. In the back: a stockroom with the breaker panel, an office with live **CCTV monitors**, and a restroom with a flickering vanity light.
-- **Story**: the clerk's rules note and the shift logbook. A breaker that brings the sales floor back with a fluorescent start-up stutter, followed by a phone call you shouldn't answer. A payphone, a knock on the side door, and a figure down the road that is only there while you're watching. Something waits by pump 2 when the lightning flashes, and the CCTV shows a figure that isn't in the aisle.
+- **Story**: the clerk's rules note and the shift logbook. A breaker that brings the sales floor back with a fluorescent start-up stutter, followed by a phone call you shouldn't answer. A payphone, the van's radio, a knock on the side door, and a figure across the road that is only there while you're watching. Something waits by pump 2 when the lightning flashes, and the CCTV shows a figure that isn't in the aisle. Answer the store phone and the night ends with the bodycam losing signal. You can keep exploring after the end card.
+- **Life on the highway**: every couple of minutes a car hisses past in the rain. Its headlights bloom in the fog and streak across the wet asphalt, and the tire noise is positional with doppler.
 
 ## Rendering
 
@@ -63,7 +64,9 @@ The pipeline is custom, built on `WebGLRenderer`.
 - Static lighting costs only texture fetches. The flashlight is the only real-time light and the only per-frame shadow map.
 - Reflections render at half resolution and volumetrics at quarter or half resolution. Bloom uses a mip chain.
 - **Dynamic resolution** targets 60 fps (between 55% and 100% render scale). The quality presets scale MSAA, the lightmap, bake samples, shadow-map size and effect resolution.
-- Shaders are precompiled during loading, and CCTV feeds render at 10 Hz and only when you are nearby.
+- Shaders are precompiled during loading with the final light setup. Material features (wetness, paint, grime, streaks, box projection) are uniform-driven rather than `#define` variants, which keeps the scene to about 80 programs instead of 160.
+- CCTV feeds render at 10 Hz and only when you are nearby. Light glows are re-ranked every frame so the 32 most relevant ones go to the atmosphere pass.
+- The phone light softens when a surface is within arm's reach (a cheap 2D raycast against the colliders), so close objects don't blow out.
 
 ## Code map
 
@@ -81,4 +84,4 @@ src/
   ui/                   HUD + styles
 ```
 
-Debug URL parameters: `?cam=x,y,z,yawDeg,pitchDeg` (start pose), `&flash` (flashlight on), `&breaker` (sales-floor lights on), `&stats`, `&q=low|medium|high|ultra`.
+Debug URL parameters: `?cam=x,y,z,yawDeg,pitchDeg` (start pose), `&flash` (flashlight on), `&breaker` (sales-floor lights on), `&stats`, `&q=low|medium|high|ultra`. The quality can also be set with a hash: `#low`, `#medium`, `#high` or `#ultra`.

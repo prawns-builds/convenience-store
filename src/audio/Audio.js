@@ -317,6 +317,9 @@ export class AudioEngine {
     this.buzzInt.crackle.gain.setTargetAtTime(int > 0.05 && int < 0.85 ? 0.06 : 0.0, t, 0.02);
   }
 
+  fadeOut(sec = 1.5) { if (this.master) this.master.gain.setTargetAtTime(0.0, this.ctx.currentTime, sec / 3); }
+  fadeIn(sec = 1.0) { if (this.master) this.master.gain.setTargetAtTime(0.9, this.ctx.currentTime, sec / 3); }
+
   setPaused(p) {
     this.paused = p;
     if (!this.ctx) return;

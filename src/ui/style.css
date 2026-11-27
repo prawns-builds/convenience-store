@@ -109,3 +109,16 @@ html, body {
   position: fixed; left: 8px; top: 8px; z-index: 20; font-size: 14px; line-height: 1.2;
   background: rgba(0, 0, 0, 0.6); padding: 6px 8px; white-space: pre; pointer-events: none;
 }
+
+/* ---------------------------------------------------------------- end card */
+#endcard {
+  position: fixed; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center;
+  background: #000; animation: endfade 1.2s ease-out both;
+}
+@keyframes endfade { from { opacity: 0; } to { opacity: 1; } }
+.end-inner { width: min(700px, 88vw); text-align: center; text-shadow: var(--hud-glow); }
+.end-sig { font-size: clamp(40px, 7vw, 76px); letter-spacing: 0.18em; }
+.end-sig .rec-dot { width: 0.4em; height: 0.4em; vertical-align: 0.15em; }
+.end-meta { margin-top: 6px; font-size: 18px; letter-spacing: 0.16em; color: var(--hud-dim); }
+.end-text { margin: 34px auto 30px; font-size: 21px; line-height: 1.4; color: rgba(236, 236, 230, 0.8); }
+.end-hint { font-size: 17px; letter-spacing: 0.12em; color: var(--hud-dim); animation: blink 2.4s steps(1) infinite; }

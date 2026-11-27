@@ -112,7 +112,7 @@ async function start() {
   };
   btn.addEventListener('click', begin);
   input.onLockChange = (locked) => {
-    if (!locked && game.started && !game.noteOpen && !input.dragLook) game.pause(true);
+    if (!locked && game.started && !game.noteOpen && !input.dragLook && !game.ending) game.pause(true);
     if (locked) { input.dragLook = false; game.pause(false); }
   };
   input.onFallback = () => game.hud.subtitle('Mouse capture unavailable here — drag with the left button to look around.', 5);
@@ -140,6 +140,7 @@ async function start() {
       for (const [k, v] of Object.entries(over.pipeline ?? {})) pipeline.params[k] = v;
       if (over.flash !== undefined) flashlight.on = !!over.flash;
       if (over.breaker !== undefined) world.setGroupLevel(0, over.breaker);
+      if (over.ending) window.__game.events.startEnding();
       if (over.figs) { const ev = window.__game.events; ev.forcePump = !!over.figs.pump; ev.figRoad.visible = !!over.figs.road; ev.state.phoneAnswered = !!over.figs.cctv; ev.state.figureRoad = over.figs.road ? 'visible' : 'hidden'; }
       if (over.lightning) window.__game.events.lightning(over.lightning);
       if (over.car !== undefined) { const tr = window.__game.traffic; tr.spawn(); tr.dir = 1; tr.x = 26.05; tr.z = over.car; tr.car.rotation.y = Math.PI; }

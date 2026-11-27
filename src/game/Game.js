@@ -132,6 +132,7 @@ export class Game {
     if (f.intT <= 0) { f.intMode = Math.random() < 0.4 ? 'stutter' : (Math.random() < 0.5 ? 'off' : 'on'); f.intT = f.intMode === 'stutter' ? 0.3 + Math.random() * 1.0 : 1 + Math.random() * 4; }
     let it = f.intMode === 'off' ? 0.0 : 0.85;
     if (f.intMode === 'stutter') it = Math.random() < 0.5 ? Math.random() * 0.3 : 0.9;
+    if (this.events?.intDead) it = 0;
     W.setGroupLevel(GROUP.FLICKER_INT, it);
     this.audio?.setFlicker(ext, it);
   }
