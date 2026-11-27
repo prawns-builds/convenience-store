@@ -83,8 +83,9 @@ uniform vec3 uBoxMax;
 uniform vec3 uProbePos;
 vec3 boxProject(vec3 wp, vec3 dir) {
   if (uBoxOn < 0.5 || any(lessThan(wp, uBoxMin)) || any(greaterThan(wp, uBoxMax))) return dir;
-  vec3 t1 = (uBoxMax - wp) / dir;
-  vec3 t2 = (uBoxMin - wp) / dir;
+  vec3 sd = mix(dir, vec3(1e-4), lessThan(abs(dir), vec3(1e-4)));
+  vec3 t1 = (uBoxMax - wp) / sd;
+  vec3 t2 = (uBoxMin - wp) / sd;
   vec3 tf = max(t1, t2);
   float d = min(min(tf.x, tf.y), tf.z);
   return normalize(wp + dir * d - uProbePos);

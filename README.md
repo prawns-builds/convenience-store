@@ -4,6 +4,10 @@ An explorable, rain-soaked roadside gas station at 2:47 AM, rendered in **three.
 
 Everything here is generated at runtime: geometry, PBR textures, signage, lighting and audio. The production build is about **880 KB**, with roughly 210 KB of gzipped JS and no image, model or audio files.
 
+![Screenshots](docs/screenshots.jpg)
+
+*These captures come from a CPU software renderer at reduced resolution and minimal bake quality, so expect a sharper, softer-shadowed result on a real GPU.*
+
 ## Run it
 
 ```bash
