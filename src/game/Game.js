@@ -202,7 +202,7 @@ export class Game {
     this._probeTick = (this._probeTick ?? 0) + 1;
     if (this._probeTick % 10 === 0) for (const d of W.dynamics) {
       if (!d.probeMats) continue;
-      const irr = W.sampleProbe(d.center, new THREE.Vector3());
+      const irr = W.sampleProbe(d.center, (this._irr ??= new THREE.Vector3()));
       for (const m of d.probeMats) { m.userData.uniforms.uProbeStatic.value.copy(irr); m.userData.uniforms.uProbeSky.value = irr.sky ?? 0; }
     }
     W.update(dt, this.time);
@@ -211,7 +211,9 @@ export class Game {
     this.audio?.update(dt);
     // progressive bake refinement
     if (!W.baker.done) {
-      W.baker.step(this.quality.bakeBudget, this.params.has('shot') ? 3 : 4);
+      // adapt refinement work to the frame budget so it never causes visible stutter
+      const jobs = this.params.has('shot') ? Number(this.params.get('bakejobs') ?? 3) : (!this.started ? 4 : dt < 0.018 ? 3 : dt < 0.03 ? 2 : 1);
+      if (jobs > 0) W.baker.step(this.quality.bakeBudget, jobs);
       if (W.baker.done) { W.captureProbes(); W._readProbes(); W.baker.disposeAccumulators(); }
     }
     this.pipeline.params.lightning = G.uLightning.value;

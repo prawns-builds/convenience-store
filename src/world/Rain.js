@@ -266,7 +266,7 @@ export class Rain {
     U.uRes.value.set(res.x, res.y);
     const L = flashlight.light;
     U.uFlashPos.value.setFromMatrixPosition(L.matrixWorld);
-    const tp = new THREE.Vector3().setFromMatrixPosition(L.target.matrixWorld);
+    const tp = (this._tp ??= new THREE.Vector3()).setFromMatrixPosition(L.target.matrixWorld);
     U.uFlashDir.value.copy(tp).sub(U.uFlashPos.value).normalize();
     U.uFlashCol.value.set(L.color.r, L.color.g, L.color.b).multiplyScalar(L.intensity * 0.06);
     U.uFlashCone.value.set(Math.cos(L.angle), Math.cos(L.angle * (1 - L.penumbra)));

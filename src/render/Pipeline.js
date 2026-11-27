@@ -31,6 +31,8 @@ export class Pipeline {
     };
     this.glows = [];
     this.flashlight = null;
+    this._v0 = new THREE.Vector3(); this._v1 = new THREE.Vector3(); this._v2 = new THREE.Vector3(); this._v3 = new THREE.Vector3();
+    this._camPos = new THREE.Vector3();
     this._build();
   }
 
@@ -142,13 +144,13 @@ export class Pipeline {
     rc.projectionMatrix.copy(camera.projectionMatrix);
     rc.projectionMatrixInverse.copy(camera.projectionMatrixInverse);
     // mirrored position / orientation (non-mirrored handedness; sampled with u flipped)
-    const cp = new THREE.Vector3().setFromMatrixPosition(camera.matrixWorld);
-    const fwd = new THREE.Vector3(0, 0, -1).transformDirection(camera.matrixWorld);
-    const up = new THREE.Vector3(0, 1, 0).transformDirection(camera.matrixWorld);
+    const cp = this._v0.setFromMatrixPosition(camera.matrixWorld);
+    const fwd = this._v1.set(0, 0, -1).transformDirection(camera.matrixWorld);
+    const up = this._v2.set(0, 1, 0).transformDirection(camera.matrixWorld);
     cp.y = -cp.y; fwd.y = -fwd.y; up.y = -up.y;
     rc.position.copy(cp);
     rc.up.copy(up);
-    rc.lookAt(cp.clone().add(fwd));
+    rc.lookAt(this._v3.copy(cp).add(fwd));
     rc.updateMatrixWorld(true);
     G.uReflPass.value = 1;
     G.uReflCamPos.value.copy(cp);
@@ -205,7 +207,7 @@ export class Pipeline {
     R.shadowMap.autoUpdate = false;
     R.shadowMap.needsUpdate = true;
     // reflection
-    const pitch = Math.asin(THREE.MathUtils.clamp(new THREE.Vector3(0, 0, -1).transformDirection(camera.matrixWorld).y, -1, 1));
+    const pitch = Math.asin(THREE.MathUtils.clamp(this._v0.set(0, 0, -1).transformDirection(camera.matrixWorld).y, -1, 1));
     const vfov = THREE.MathUtils.degToRad(camera.fov) * 0.5;
     const groundVisible = pitch - vfov < 0.05;
     if (groundVisible && this.q.reflScale > 0) this._renderReflection(scene, camera);
@@ -219,7 +221,7 @@ export class Pipeline {
     // matrices
     const projInv = camera.projectionMatrixInverse;
     const viewInv = camera.matrixWorld;
-    const camPos = new THREE.Vector3().setFromMatrixPosition(camera.matrixWorld);
+    const camPos = this._camPos.setFromMatrixPosition(camera.matrixWorld);
 
     // volumetrics
     const V = this.vol.uniforms;
@@ -233,7 +235,7 @@ export class Pipeline {
     if (fl && fl.light.intensity > 0.001 && fl.light.shadow.map) {
       V.uFlashOn.value = 1;
       V.uFlashPos.value.setFromMatrixPosition(fl.light.matrixWorld);
-      const tp = new THREE.Vector3().setFromMatrixPosition(fl.light.target.matrixWorld);
+      const tp = this._v3.setFromMatrixPosition(fl.light.target.matrixWorld);
       V.uFlashDir.value.copy(tp).sub(V.uFlashPos.value).normalize();
       V.uFlashColor.value.set(fl.light.color.r, fl.light.color.g, fl.light.color.b).multiplyScalar(fl.light.intensity * fl.volumetricScale);
       V.uFlashCone.value.set(Math.cos(fl.light.angle), Math.cos(fl.light.angle * (1 - fl.light.penumbra)));

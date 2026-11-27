@@ -221,7 +221,7 @@ export class Flashlight {
     this.screenMat.color.setScalar(0.38 + 0.1 * this.level);
     this._drawScreen();
     // phone lit by probe at camera position
-    const irr = this.world.sampleProbe(cam.position, new THREE.Vector3());
+    const irr = this.world.sampleProbe(cam.position, (this._irr ??= new THREE.Vector3()));
     for (const m of this.mats) {
       const u = m.userData.uniforms;
       if (u?.uProbeStatic) { u.uProbeStatic.value.copy(irr).addScalar(0.01 + 0.02 * this.level); u.uProbeSky.value = (irr.sky ?? 0); }
